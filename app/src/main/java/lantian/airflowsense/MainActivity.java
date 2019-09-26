@@ -1,8 +1,5 @@
 package lantian.airflowsense;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,12 +8,65 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.util.Locale;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import lantian.airflowsense.weather.WeatherCallback;
+import lantian.airflowsense.weather.WeatherData;
+import lantian.airflowsense.weather.WeatherHelper;
 
 public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
     DataUpdateReceiver dataUpdateReceiver = new DataUpdateReceiver();
     IntentFilter intentFilter = new IntentFilter();
+
+    private void refreshWeather() {
+        final TextView textWeather = findViewById(R.id.text_weather);
+        final TextView textUpdateTime = findViewById(R.id.text_update_time);
+        final TextView textTemperature = findViewById(R.id.text_temperature);
+        final TextView textLocation = findViewById(R.id.text_location);
+        final TextView textHumidity = findViewById(R.id.text_humidity);
+        final TextView textAQI = findViewById(R.id.text_aqi);
+
+        textWeather.setText("正在刷新");
+        textUpdateTime.setText("---");
+        textTemperature.setText("--");
+        textLocation.setText("---");
+        textHumidity.setText("--");
+        textAQI.setText("---");
+
+        WeatherHelper.fetchWeatherAsync(new WeatherCallback() {
+            @Override
+            public void callback(final WeatherData data) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (data.success) {
+                                textWeather.setText(data.weather);
+                                textUpdateTime.setText(data.timestamp);
+                                textTemperature.setText(data.temperature);
+                                textLocation.setText(data.location);
+                                textHumidity.setText(data.humidity);
+                                textAQI.setText(data.aqi + " (" + data.aqi_level + ")");
+                            } else {
+                                textWeather.setText("获取失败");
+                                textUpdateTime.setText("---");
+                                textTemperature.setText("--");
+                                textLocation.setText("---");
+                                textHumidity.setText("--");
+                                textAQI.setText("---");
+                            }
+                        } catch (NullPointerException npe) {
+                            npe.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -27,13 +77,9 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        if(item.getItemId() == R.id.menu_connect) {
-            // TODO: show search for device activity
-            return true;
-        }
-        return false;
+        // TODO: show search for device activity
+        return item.getItemId() == R.id.menu_connect;
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +93,11 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        startService(new Intent(this, PseudoDataReceiveService.class));
+        if (!PseudoDataReceiveService.RUNNING) {
+            startService(new Intent(this, PseudoDataReceiveService.class));
+        }
+
+        refreshWeather();
     }
 
     @Override
@@ -60,6 +110,9 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     protected void onResume() {
         super.onResume();
         registerReceiver(dataUpdateReceiver, intentFilter);
+        if (!PseudoDataReceiveService.RUNNING) {
+            startService(new Intent(this, PseudoDataReceiveService.class));
+        }
     }
 
     @Override
@@ -102,6 +155,11 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                         ((TextView) findViewById(R.id.text_max_value)).setText(recent_max);
                         ((TextView) findViewById(R.id.text_min_value)).setText(recent_min);
                         ((TextView) findViewById(R.id.text_average_value)).setText(recent_average);
+
+                        ToggleButton tb = findViewById(R.id.measurement_button);
+                        if (tb.isChecked()) {
+                            ((TextView) findViewById(R.id.text_measurement_value)).setText(recent_max);
+                        }
                     }
                 });
             } else if(Common.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {

@@ -7,10 +7,10 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class PseudoDataReceiveService extends Service {
+    public static boolean RUNNING = false;
+
     private Random random = new Random();
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
@@ -48,6 +48,7 @@ public class PseudoDataReceiveService extends Service {
             }
         });
         handler.post(runnable);
+        RUNNING = true;
         return Service.START_STICKY;
     }
 
@@ -64,5 +65,6 @@ public class PseudoDataReceiveService extends Service {
                 sendBroadcast(intent);
             }
         });
+        RUNNING = false;
     }
 }

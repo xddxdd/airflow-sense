@@ -21,18 +21,137 @@
         android:layout_alignParentTop="true"
         />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/statistics"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/weather">
+
+        <TextView
+            android:id="@+id/textbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Hello World!"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textColor="@android:color/white" />
+
+        <lantian.airflowsense.DataPlotView
+            android:id="@+id/dataplot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </RelativeLayout>
+
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardview"
+        android:id="@+id/weather"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/toolbar"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="@dimen/card_separation"
+        android:layout_marginStart="@dimen/card_separation"
         android:layout_marginTop="0dp"
         android:layout_marginBottom="0dp"
-        app:contentPadding="5dp">
+        app:contentPadding="@dimen/card_padding">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/text_weather"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <TextView
+                android:id="@+id/text_temperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/text_separation"
+                android:layout_toEndOf="@id/text_weather"
+                android:text=""
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <TextView
+                android:id="@+id/text_temperature_unit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/text_temperature"
+                android:text="℃"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <TextView
+                android:id="@+id/text_humidity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/text_separation"
+                android:layout_toEndOf="@id/text_temperature_unit"
+                android:text=""
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/text_humidity_unit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/text_humidity"
+                android:text="%" />
+
+            <TextView
+                android:id="@+id/text_aqi_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/text_separation"
+                android:layout_toEndOf="@id/text_humidity_unit"
+                android:text="AQI" />
+
+            <TextView
+                android:id="@+id/text_aqi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/text_separation"
+                android:layout_toEndOf="@id/text_aqi_label"
+                android:text=""
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/text_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/text_humidity"
+                android:layout_marginStart="@dimen/text_separation"
+                android:layout_toEndOf="@id/text_temperature_unit"
+                android:text=""
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/text_update_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/text_location"
+                android:layout_marginStart="@dimen/text_separation"
+                android:layout_toEndOf="@id/text_location"
+                android:text="" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/statistics"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/measurement"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="@dimen/card_separation"
+        android:layout_marginEnd="@dimen/card_separation"
+        android:layout_marginStart="@dimen/card_separation"
+        android:layout_marginTop="0dp"
+        app:contentPadding="@dimen/card_padding">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -42,8 +161,6 @@
                 android:id="@+id/text_max_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
                 android:text="Max: " />
 
             <TextView
@@ -91,28 +208,95 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <RelativeLayout
+    <androidx.cardview.widget.CardView
+        android:id="@+id/measurement"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/cardview"
-        android:layout_alignParentStart="true"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/health_data"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="@dimen/card_separation"
+        android:layout_marginEnd="@dimen/card_separation"
+        android:layout_marginStart="@dimen/card_separation"
+        android:layout_marginTop="0dp"
+        app:contentPadding="@dimen/card_padding">
 
-        <TextView
-            android:id="@+id/textbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Hello World!"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@android:color/white" />
-
-        <lantian.airflowsense.DataPlotView
-            android:id="@+id/dataplot"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
 
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/text_measurement_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/measurement_button"
+                android:layout_toEndOf="@id/measurement_button"
+                android:text="结果：" />
+
+            <TextView
+                android:id="@+id/text_measurement_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/text_measurement_title"
+                android:layout_toEndOf="@id/text_measurement_title"
+                android:text="0.00"
+                android:textColor="@android:color/black" />
+
+            <ToggleButton
+                android:id="@+id/measurement_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textOff="开始测量"
+                android:textOn="测量中" />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/health_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="@dimen/card_separation"
+        android:layout_marginEnd="@dimen/card_separation"
+        android:layout_marginStart="@dimen/card_separation"
+        android:layout_marginTop="0dp"
+        app:contentPadding="@dimen/card_padding">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/health_label"
+                android:text="保存" />
+
+            <CheckBox
+                android:id="@+id/health_phlegm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/health_cough"
+                android:text="痰" />
+
+            <CheckBox
+                android:id="@+id/health_cough"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/health_label"
+                android:text="咳嗽" />
+
+            <TextView
+                android:id="@+id/health_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/health_cough"
+                android:text="症状：" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 
 </RelativeLayout>
