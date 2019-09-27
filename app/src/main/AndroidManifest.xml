@@ -20,7 +20,7 @@
         </activity>
 
         <service
-            android:name=".PseudoDataReceiveService"
+            android:name=".datareceiver.PseudoDataReceiveService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

@@ -1,55 +1,69 @@
 package lantian.airflowsense.weather;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.content.Context;
 
-import java.io.IOException;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import interfaces.heweather.com.interfacesmodule.bean.air.now.AirNow;
+import interfaces.heweather.com.interfacesmodule.bean.weather.now.Now;
+import interfaces.heweather.com.interfacesmodule.view.HeConfig;
+import interfaces.heweather.com.interfacesmodule.view.HeWeather;
 
 public class WeatherHelper {
-    public static void fetchWeatherAsync(final WeatherCallback callback) {
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
-                fetchWeather(callback);
-            }
-        })).start();
+    public WeatherHelper() {
+        HeConfig.init("HE1909271417191305", "43fb431a8ab046b0b9f547df14f4c6e9");
+        HeConfig.switchToFreeServerNode();
     }
 
-    public static void fetchWeather(WeatherCallback callback) {
-        WeatherData data = new WeatherData();
-        try {
-            OkHttpClient client = new OkHttpClient();
-            Request generalDataRequest = new Request.Builder()
-                    .url("https://free-api.heweather.net/s6/weather/now?location=auto_ip&key=db86a5196f304e52a4369818c5182e60")
-                    .build();
-            Response generalDataResponse = client.newCall(generalDataRequest).execute();
+    public void fetchWeatherAsync(final Context context, final WeatherCallback callback) {
+        final WeatherData data = new WeatherData();
 
-            Request airQualityDataRequest = new Request.Builder()
-                    .url("https://free-api.heweather.net/s6/air/now?location=auto_ip&key=db86a5196f304e52a4369818c5182e60")
-                    .build();
-            Response airQualityDataResponse = client.newCall(airQualityDataRequest).execute();
+        HeWeather.getAirNow(context, "auto_ip", new HeWeather.OnResultAirNowBeansListener() {
+            @Override
+            public void onError(Throwable throwable) {
+                if (data.isFailed()) return;
 
-            JSONObject generalDataJson = new JSONObject(generalDataResponse.body().string()).getJSONArray("HeWeather6").getJSONObject(0);
-            JSONObject airQualityDataJson = new JSONObject(airQualityDataResponse.body().string()).getJSONArray("HeWeather6").getJSONObject(0);
+                data.error = throwable.getMessage();
 
-            data.location = generalDataJson.getJSONObject("basic").getString("location");
-            data.timestamp = generalDataJson.getJSONObject("update").getString("loc");
-            data.weather = generalDataJson.getJSONObject("now").getString("cond_txt");
-            data.temperature = generalDataJson.getJSONObject("now").getString("tmp");
-            data.humidity = generalDataJson.getJSONObject("now").getString("hum");
-            data.aqi = airQualityDataJson.getJSONObject("air_now_city").getString("aqi");
-            data.aqi_level = airQualityDataJson.getJSONObject("air_now_city").getString("qlty");
-            data.success = true;
+                callback.callback(data);
+            }
 
-        } catch (IOException | JSONException | NullPointerException e) {
-            e.printStackTrace();
+            @Override
+            public void onSuccess(AirNow airNow) {
+                if (data.isFailed()) return;
 
-            data.success = false;
-        }
-        callback.callback(data);
+                data.aqi = airNow.getAir_now_city().getAqi();
+                data.aqi_level = airNow.getAir_now_city().getQlty();
+
+                if (data.isReady()) {
+                    callback.callback(data);
+                }
+            }
+        });
+
+        HeWeather.getWeatherNow(context, "auto_ip", new HeWeather.OnResultWeatherNowBeanListener() {
+            @Override
+            public void onError(Throwable throwable) {
+                if (data.isFailed()) return;
+
+                data.error = throwable.getMessage();
+
+                callback.callback(data);
+            }
+
+            @Override
+            public void onSuccess(Now now) {
+
+                if (data.isFailed()) return;
+
+                data.location = now.getBasic().getLocation();
+                data.timestamp = now.getUpdate().getLoc();
+                data.weather = now.getNow().getCond_txt();
+                data.temperature = now.getNow().getTmp();
+                data.humidity = now.getNow().getHum();
+
+                if (data.isReady()) {
+                    callback.callback(data);
+                }
+            }
+        });
     }
 }

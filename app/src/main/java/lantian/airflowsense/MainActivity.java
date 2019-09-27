@@ -7,13 +7,16 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import lantian.airflowsense.datareceiver.PseudoDataReceiveService;
 import lantian.airflowsense.weather.WeatherCallback;
 import lantian.airflowsense.weather.WeatherData;
 import lantian.airflowsense.weather.WeatherHelper;
@@ -21,8 +24,11 @@ import lantian.airflowsense.weather.WeatherHelper;
 public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
     DataUpdateReceiver dataUpdateReceiver = new DataUpdateReceiver();
     IntentFilter intentFilter = new IntentFilter();
+    WeatherHelper weatherHelper = new WeatherHelper();
 
     private void refreshWeather() {
+        findViewById(R.id.button_refresh_weather).setEnabled(false);
+
         final TextView textWeather = findViewById(R.id.text_weather);
         final TextView textUpdateTime = findViewById(R.id.text_update_time);
         final TextView textTemperature = findViewById(R.id.text_temperature);
@@ -37,14 +43,14 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         textHumidity.setText("--");
         textAQI.setText("---");
 
-        WeatherHelper.fetchWeatherAsync(new WeatherCallback() {
+        weatherHelper.fetchWeatherAsync(this, new WeatherCallback() {
             @Override
             public void callback(final WeatherData data) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            if (data.success) {
+                            if (data.isReady()) {
                                 textWeather.setText(data.weather);
                                 textUpdateTime.setText(data.timestamp);
                                 textTemperature.setText(data.temperature);
@@ -58,10 +64,12 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                                 textLocation.setText("---");
                                 textHumidity.setText("--");
                                 textAQI.setText("---");
+                                Toast.makeText(getApplicationContext(), data.error, Toast.LENGTH_LONG).show();
                             }
                         } catch (NullPointerException npe) {
                             npe.printStackTrace();
                         }
+                        findViewById(R.id.button_refresh_weather).setEnabled(true);
                     }
                 });
             }
@@ -97,6 +105,12 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
             startService(new Intent(this, PseudoDataReceiveService.class));
         }
 
+        findViewById(R.id.button_refresh_weather).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refreshWeather();
+            }
+        });
         refreshWeather();
     }
 
@@ -170,9 +184,9 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                     @Override
                     public void run() {
                         if(connected) {
-                            getSupportActionBar().setTitle("Connected: " + name);
+                            getSupportActionBar().setTitle(name + " 已连接");
                         } else {
-                            getSupportActionBar().setTitle("Disconnected: " + name);
+                            getSupportActionBar().setTitle(name + " 连接中断");
                         }
                     }
                 });

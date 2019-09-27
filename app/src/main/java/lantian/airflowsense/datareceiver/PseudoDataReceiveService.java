@@ -1,4 +1,4 @@
-package lantian.airflowsense;
+package lantian.airflowsense.datareceiver;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,6 +7,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.Random;
+
+import lantian.airflowsense.Common;
 
 public class PseudoDataReceiveService extends Service {
     public static boolean RUNNING = false;
@@ -43,7 +45,7 @@ public class PseudoDataReceiveService extends Service {
                 Intent intent = new Intent();
                 intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
                 intent.putExtra("connected", true);
-                intent.putExtra("name", "Pseudo Sensor");
+                intent.putExtra("name", "随机数产生器");
                 sendBroadcast(intent);
             }
         });
@@ -61,7 +63,7 @@ public class PseudoDataReceiveService extends Service {
                 Intent intent = new Intent();
                 intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
                 intent.putExtra("connected", false);
-                intent.putExtra("name", "Pseudo Sensor");
+                intent.putExtra("name", "随机数产生器");
                 sendBroadcast(intent);
             }
         });
