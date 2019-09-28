@@ -185,15 +185,17 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                 });
             } else if(Common.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {
                 final boolean connected = intent.getBooleanExtra("connected", false);
-                final String name = intent.getStringExtra("name");
+//                final String name = intent.getStringExtra("name");
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(connected) {
-                            getSupportActionBar().setTitle(name + " 已连接");
+                            getSupportActionBar().setTitle("呼吸监测设备 已连接");
+//                            getSupportActionBar().setTitle(name + " 已连接");
                         } else {
-                            getSupportActionBar().setTitle(name + " 连接中断");
+                            getSupportActionBar().setTitle("呼吸监测设备 连接中断");
+//                            getSupportActionBar().setTitle(name + " 连接中断");
                         }
                     }
                 });
