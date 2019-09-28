@@ -17,6 +17,7 @@ import java.util.Locale;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import lantian.airflowsense.datareceiver.PseudoDataReceiveService;
+import lantian.airflowsense.datareceiver.SampleDataReceiveService;
 import lantian.airflowsense.weather.WeatherCallback;
 import lantian.airflowsense.weather.WeatherData;
 import lantian.airflowsense.weather.WeatherHelper;
@@ -76,6 +77,16 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         });
     }
 
+    private void startDataReceiveService() {
+        if (!SampleDataReceiveService.RUNNING) {
+            startService(new Intent(this, SampleDataReceiveService.class));
+        }
+    }
+
+    private void stopDataReceiveService() {
+        stopService(new Intent(this, SampleDataReceiveService.class));
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -101,9 +112,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (!PseudoDataReceiveService.RUNNING) {
-            startService(new Intent(this, PseudoDataReceiveService.class));
-        }
+        startDataReceiveService();
 
         findViewById(R.id.button_refresh_weather).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,15 +133,13 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     protected void onResume() {
         super.onResume();
         registerReceiver(dataUpdateReceiver, intentFilter);
-        if (!PseudoDataReceiveService.RUNNING) {
-            startService(new Intent(this, PseudoDataReceiveService.class));
-        }
+        startDataReceiveService();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService(new Intent(this, PseudoDataReceiveService.class));
+        stopDataReceiveService();
     }
 
     public class DataUpdateReceiver extends BroadcastReceiver {
