@@ -21,14 +21,38 @@
         android:layout_alignParentTop="true"
         />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/weather"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/toolbar">
+
+        <TextView
+            android:id="@+id/textbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="0.00"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_size_large" />
+
+        <lantian.airflowsense.DataPlotView
+            android:id="@+id/dataplot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </RelativeLayout>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/weather"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/toolbar"
-        android:layout_marginBottom="0dp"
+        android:layout_above="@id/statistics"
+        android:layout_marginBottom="@dimen/card_separation"
         android:layout_marginEnd="@dimen/card_separation"
         android:layout_marginStart="@dimen/card_separation"
         android:layout_marginTop="0dp"
@@ -38,12 +62,24 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <ImageButton
+                android:id="@+id/button_refresh_weather"
+                android:layout_width="@dimen/text_size_large"
+                android:layout_height="@dimen/text_size_large"
+                android:layout_alignParentEnd="true"
+                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"
+                android:tint="@android:color/secondary_text_dark"
+                android:tintMode="src_atop"
+                app:srcCompat="@drawable/ic_refresh_black_24dp" />
+
             <TextView
                 android:id="@+id/text_weather"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/text_size_large" />
 
             <TextView
                 android:id="@+id/text_temperature"
@@ -52,15 +88,17 @@
                 android:layout_marginStart="@dimen/text_separation"
                 android:layout_toEndOf="@id/text_weather"
                 android:text=""
-                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/text_size_large" />
 
             <TextView
                 android:id="@+id/text_temperature_unit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/text_temperature"
+                android:layout_alignBaseline="@id/text_temperature"
                 android:text="℃"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                android:textSize="@dimen/text_size_mid_large" />
 
             <TextView
                 android:id="@+id/text_humidity"
@@ -69,6 +107,7 @@
                 android:layout_marginStart="@dimen/text_separation"
                 android:layout_toEndOf="@id/text_temperature_unit"
                 android:text=""
+                android:textSize="@dimen/text_size_normal"
                 android:textColor="@android:color/black" />
 
             <TextView
@@ -76,7 +115,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/text_humidity"
-                android:text="%" />
+                android:text="%"
+                android:textSize="@dimen/text_size_normal" />
 
             <TextView
                 android:id="@+id/text_aqi_label"
@@ -84,7 +124,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/text_separation"
                 android:layout_toEndOf="@id/text_humidity_unit"
-                android:text="AQI" />
+                android:text="AQI"
+                android:textSize="@dimen/text_size_normal" />
 
             <TextView
                 android:id="@+id/text_aqi"
@@ -93,6 +134,7 @@
                 android:layout_marginStart="@dimen/text_separation"
                 android:layout_toEndOf="@id/text_aqi_label"
                 android:text=""
+                android:textSize="@dimen/text_size_normal"
                 android:textColor="@android:color/black" />
 
             <TextView
@@ -103,6 +145,7 @@
                 android:layout_marginStart="@dimen/text_separation"
                 android:layout_toEndOf="@id/text_temperature_unit"
                 android:text=""
+                android:textSize="@dimen/text_size_normal"
                 android:textColor="@android:color/black" />
 
             <TextView
@@ -112,46 +155,11 @@
                 android:layout_alignTop="@id/text_location"
                 android:layout_marginStart="@dimen/text_separation"
                 android:layout_toEndOf="@id/text_location"
-                android:text="" />
-
-            <ImageButton
-                android:id="@+id/button_refresh_weather"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="false"
-                android:background="@android:color/transparent"
-                android:scaleType="fitCenter"
-                android:tint="@android:color/secondary_text_dark"
-                android:tintMode="src_atop"
-                app:srcCompat="@drawable/ic_refresh_black_24dp" />
+                android:text=""
+                android:textSize="@dimen/text_size_normal" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/statistics"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/weather">
-
-        <TextView
-            android:id="@+id/textbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="0.00"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@android:color/white" />
-
-        <lantian.airflowsense.DataPlotView
-            android:id="@+id/dataplot"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </RelativeLayout>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/statistics"
@@ -175,13 +183,15 @@
                 android:id="@+id/text_max_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="最大：" />
+                android:text="最大："
+                android:textSize="@dimen/text_size_mid" />
 
             <TextView
                 android:id="@+id/text_max_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0.00"
+                android:textSize="@dimen/text_size_mid"
                 android:textColor="@android:color/black"/>
 
             <TextView
@@ -189,13 +199,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/text_separation"
-                android:text="最小：" />
+                android:text="最小："
+                android:textSize="@dimen/text_size_mid" />
 
             <TextView
                 android:id="@+id/text_min_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0.00"
+                android:textSize="@dimen/text_size_mid"
                 android:textColor="@android:color/black"/>
 
             <TextView
@@ -203,13 +215,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/text_separation"
-                android:text="平均：" />
+                android:text="平均："
+                android:textSize="@dimen/text_size_mid" />
 
             <TextView
                 android:id="@+id/text_average_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0.00"
+                android:textSize="@dimen/text_size_mid"
                 android:textColor="@android:color/black"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -237,7 +251,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignBaseline="@id/measurement_button"
                 android:layout_toEndOf="@id/measurement_button"
-                android:text="结果：" />
+                android:text="结果："
+                android:textSize="@dimen/text_size_normal" />
 
             <TextView
                 android:id="@+id/text_measurement_value"
@@ -246,6 +261,7 @@
                 android:layout_alignBaseline="@id/text_measurement_title"
                 android:layout_toEndOf="@id/text_measurement_title"
                 android:text="0.00"
+                android:textSize="@dimen/text_size_normal"
                 android:textColor="@android:color/black" />
 
             <ToggleButton
@@ -253,7 +269,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textOff="开始测量"
-                android:textOn="测量中" />
+                android:textOn="测量中"
+                android:textSize="@dimen/text_size_normal" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -275,19 +292,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/health_label"
+            <Button
+                android:id="@+id/button_save"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="症状：" />
-
-            <CheckBox
-                android:id="@+id/health_cough"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/health_label"
-                android:layout_alignBaseline="@id/health_label"
-                android:text="咳嗽" />
+                android:layout_below="@id/health_label"
+                android:text="保存"
+                android:textSize="@dimen/text_size_normal" />
 
             <CheckBox
                 android:id="@+id/health_asthma"
@@ -295,7 +306,8 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/health_cough"
                 android:layout_alignBaseline="@id/health_cough"
-                android:text="气喘" />
+                android:text="气喘"
+                android:textSize="@dimen/text_size_normal" />
 
             <CheckBox
                 android:id="@+id/health_limited_activity"
@@ -303,7 +315,8 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/health_asthma"
                 android:layout_alignBaseline="@id/health_asthma"
-                android:text="活动受限" />
+                android:text="活动受限"
+                android:textSize="@dimen/text_size_normal" />
 
             <CheckBox
                 android:id="@+id/health_night_suffocate"
@@ -311,14 +324,24 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/health_limited_activity"
                 android:layout_alignBaseline="@id/health_limited_activity"
-                android:text="夜间憋醒" />
+                android:text="夜间憋醒"
+                android:textSize="@dimen/text_size_normal" />
 
-            <Button
-                android:id="@+id/button_save"
+            <CheckBox
+                android:id="@+id/health_cough"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/health_label"
-                android:text="保存" />
+                android:layout_toEndOf="@id/health_label"
+                android:layout_alignBaseline="@id/health_label"
+                android:text="咳嗽"
+                android:textSize="@dimen/text_size_normal" />
+
+            <TextView
+                android:id="@+id/health_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="症状"
+                android:textSize="@dimen/text_size_normal" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

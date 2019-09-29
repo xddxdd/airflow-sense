@@ -3,4 +3,9 @@
     <dimen name="text_separation">5dp</dimen>
     <dimen name="card_separation">10dp</dimen>
     <dimen name="card_padding">5dp</dimen>
+
+    <dimen name="text_size_normal">16sp</dimen>
+    <dimen name="text_size_mid">20sp</dimen>
+    <dimen name="text_size_mid_large">24sp</dimen>
+    <dimen name="text_size_large">32sp</dimen>
 </resources>

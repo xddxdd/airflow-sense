@@ -16,7 +16,6 @@ import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import lantian.airflowsense.datareceiver.PseudoDataReceiveService;
 import lantian.airflowsense.datareceiver.SampleDataReceiveService;
 import lantian.airflowsense.weather.WeatherCallback;
 import lantian.airflowsense.weather.WeatherData;

@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 public class DataPlotView extends View {
-    int data_length = 256;
+    int data_length = 384;
     int data_offset = 0;
     double[] data;
     float[] data_y_coordinates;
