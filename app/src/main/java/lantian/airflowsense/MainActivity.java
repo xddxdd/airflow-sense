@@ -142,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ((DataPlotView) findViewById(R.id.dataplot)).setRange(0, 5);
         refreshWeather();
     }
 
