@@ -11,6 +11,8 @@ import android.view.View;
 public class DataPlotView extends View {
     int data_length = 384;
     int data_offset = 0;
+    double data_min = 0;
+    double data_max = 1;
     double[] data;
     float[] data_y_coordinates;
 
@@ -40,10 +42,15 @@ public class DataPlotView extends View {
         _calculatePath();
     }
 
+    public void setRange(double min, double max) {
+        data_min = min;
+        data_max = max;
+    }
+
     public double mapDataToZeroToOne(double value) {
-        if(value > 1.0) return 1.0;
-        if(value < 0.0) return 0.0;
-        return value;
+        if (value > data_max) return 1.0;
+        if (value < data_min) return 0.0;
+        return (value - data_min) / (data_max - data_min);
     }
 
     public void addDataPoint(double value) {

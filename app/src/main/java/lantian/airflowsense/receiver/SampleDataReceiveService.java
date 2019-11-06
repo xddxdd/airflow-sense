@@ -1,47 +1,56 @@
-package lantian.airflowsense.datareceiver;
+package lantian.airflowsense.receiver;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import lantian.airflowsense.Common;
 
 public class SampleDataReceiveService extends Service {
     public static boolean RUNNING = false;
 
-    private List<Double> sampleData = new ArrayList<>();
-    private int sampleDataPos = 0;
-
-    private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            double new_value = sampleData.get(sampleDataPos);
-            sampleDataPos = (sampleDataPos + 1) % sampleData.size();
+            if (RUNNING) {
+                double new_value = sampleData.get(sampleDataPos);
+                sampleDataPos = (sampleDataPos + 1) % sampleData.size();
 
-            Intent intent = new Intent();
-            intent.setAction(Common.BROADCAST_DATA_UPDATE);
-            intent.putExtra("new_value", new_value);
-            sendBroadcast(intent);
-            Log.i(getClass().getSimpleName(), String.valueOf(new_value));
+                Intent intent = new Intent();
+                intent.setAction(Common.BROADCAST_DATA_UPDATE);
+                intent.putExtra("new_value", new_value);
+                sendBroadcast(intent);
+                Log.i(getClass().getSimpleName(), String.valueOf(new_value));
 
-            handler.postDelayed(runnable, 16);
+                handler.postDelayed(runnable, 16);
+            } else {
+                onDestroy();
+            }
         }
     };
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return new MyBinder();
+    }
+
+    private List<Double> sampleData = new ArrayList<>();
+    private int sampleDataPos = 0;
+
+    private Handler handler = new Handler();
+
+    public class MyBinder extends Binder {
+        SampleDataReceiveService getService() {
+            return SampleDataReceiveService.this;
+        }
     }
 
     @Override

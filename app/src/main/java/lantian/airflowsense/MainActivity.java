@@ -1,10 +1,13 @@
 package lantian.airflowsense;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,12 +19,12 @@ import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import lantian.airflowsense.datareceiver.SampleDataReceiveService;
+import lantian.airflowsense.receiver.BLEReceiveService;
 import lantian.airflowsense.weather.WeatherCallback;
 import lantian.airflowsense.weather.WeatherData;
 import lantian.airflowsense.weather.WeatherHelper;
 
-public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity {
     DataUpdateReceiver dataUpdateReceiver = new DataUpdateReceiver();
     IntentFilter intentFilter = new IntentFilter();
     WeatherHelper weatherHelper = new WeatherHelper();
@@ -76,14 +79,26 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         });
     }
 
-    private void startDataReceiveService() {
-        if (!SampleDataReceiveService.RUNNING) {
-            startService(new Intent(this, SampleDataReceiveService.class));
+    private BLEReceiveService serviceInstance;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            serviceInstance = ((BLEReceiveService.MyBinder) service).getService();
         }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceInstance = null;
+        }
+    };
+
+    private void startDataReceiveService() {
+        startService(new Intent(this, BLEReceiveService.class));
     }
 
     private void stopDataReceiveService() {
-        stopService(new Intent(this, SampleDataReceiveService.class));
+        stopService(new Intent(this, BLEReceiveService.class));
     }
 
     @Override
@@ -93,10 +108,17 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         return true;
     }
 
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        // TODO: show search for device activity
-        return item.getItemId() == R.id.menu_connect;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_connect:
+                startDataReceiveService();
+                return true;
+            case R.id.menu_disconnect:
+                stopDataReceiveService();
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -111,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        startDataReceiveService();
+//        startDataReceiveService();
 
         findViewById(R.id.button_refresh_weather).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                 refreshWeather();
             }
         });
+
+        ((DataPlotView) findViewById(R.id.dataplot)).setRange(0, 5);
         refreshWeather();
     }
 
@@ -132,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     protected void onResume() {
         super.onResume();
         registerReceiver(dataUpdateReceiver, intentFilter);
-        startDataReceiveService();
+//        startDataReceiveService();
     }
 
     @Override
@@ -164,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                 final String recent_average = String.format(
                         Locale.SIMPLIFIED_CHINESE,
                         "%.2f",
-                        dpv.getRecentDataAverage(16)
+                        dpv.getRecentDataAverage(1)
                 );
 
                 runOnUiThread(new Runnable() {
@@ -184,17 +208,17 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                 });
             } else if(Common.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {
                 final boolean connected = intent.getBooleanExtra("connected", false);
-//                final String name = intent.getStringExtra("name");
+                final String name = intent.getStringExtra("name");
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(connected) {
-                            getSupportActionBar().setTitle("呼吸监测设备 已连接");
-//                            getSupportActionBar().setTitle(name + " 已连接");
+//                            getSupportActionBar().setTitle("呼吸监测设备 已连接");
+                            getSupportActionBar().setTitle(name + " 已连接");
                         } else {
-                            getSupportActionBar().setTitle("呼吸监测设备 连接中断");
-//                            getSupportActionBar().setTitle(name + " 连接中断");
+//                            getSupportActionBar().setTitle("呼吸监测设备 连接中断");
+                            getSupportActionBar().setTitle(name + " 连接中断");
                         }
                     }
                 });
