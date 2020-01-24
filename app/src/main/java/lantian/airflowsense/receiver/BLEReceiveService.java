@@ -30,9 +30,9 @@ import java.util.UUID;
 import lantian.airflowsense.Common;
 
 public class BLEReceiveService extends Service {
-    public static boolean RUNNING = false;
-    BluetoothManager btManager;
-    BluetoothAdapter btAdapter;
+    public static boolean RUNNING = false; // Indicating the running state of the BLEReceiveService
+    BluetoothManager btManager; // The BluetoothManager is served for obtaining the BluetoothAdapter
+    BluetoothAdapter btAdapter; // The BluetoothAdapter provides fundamental operations about Bluetooth
     BluetoothGatt btGatt;
     BluetoothLeScanner bleScanner;
     UUID bleServiceCharacteristic = convertFromInteger(0x3c22);
@@ -42,13 +42,16 @@ public class BLEReceiveService extends Service {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
+            /* BluetoothDevice represents a remote Bluetooth device */
             BluetoothDevice device = result.getDevice();
 
 //            Log.i("BLE Device Addr", device.getAddress());
-            if (null == device.getName()) return;
+            if (null == device.getName()) return; // Check whether available device is found
             if (device.getName().startsWith("BloodPressureBP")) {
+                /* If the bluetooth device's name meets requirement, stop scanning and return result */
                 Log.i("BLE Device", device.getName());
-                bleScanner.stopScan(bleScanCallback);
+                bleScanner.stopScan(bleScanCallback); // Stops the ongoing Bluetooth LE scan
+                /* Obtain the BluetoothGatt Service on the device */
                 btGatt = device.connectGatt(getApplicationContext(), true, bleCallback);
             }
         }
@@ -60,31 +63,39 @@ public class BLEReceiveService extends Service {
             Toast.makeText(BLEReceiveService.this, "BLE connect failed: " + errorCode, Toast.LENGTH_SHORT).show();
         }
     };
+
     private Handler handler = new Handler();
+
     BluetoothGattCallback bleCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
+            /* Check whether the BLEReceiveService is running */
             if (!RUNNING) {
+                /* If the service is not running, disconnect the bluetooth */
                 gatt.disconnect();
                 return;
             }
-            if (status != BluetoothGatt.GATT_SUCCESS) return;
+            if (status != BluetoothGatt.GATT_SUCCESS) return; // If connection or disconnection fails, return
+            /* If a connection or disconnection is done, do the reaction accordingly */
             if (newState == BluetoothGatt.STATE_CONNECTED) {
+                /* If a connection is done */
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         Intent intent = new Intent();
-                        intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
+                        intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE); // Resume the MainActivity class
                         intent.putExtra("connected", true);
                         intent.putExtra("name", "蓝牙");
+                        /* Broadcast the information that a connection is done */
                         sendBroadcast(intent);
                     }
                 });
-                gatt.discoverServices();
+                gatt.discoverServices(); // Start trying to find the services and characteristics of this device
 //                gatt.readCharacteristic(bleCharacteristic);
 //                gatt.setCharacteristicNotification(bleCharacteristic, true);
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                /* If a disconnection is done */
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -92,6 +103,7 @@ public class BLEReceiveService extends Service {
                         intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
                         intent.putExtra("connected", false);
                         intent.putExtra("name", "蓝牙");
+                        /* Broadcast the information that a disconnection is done */
                         sendBroadcast(intent);
                     }
                 });
@@ -102,7 +114,9 @@ public class BLEReceiveService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
+            /* Check whether the BLEReceiveService is running */
             if (!RUNNING) {
+                /* If the service is not running, disconnect the bluetooth */
                 gatt.disconnect();
                 return;
             }
@@ -112,6 +126,7 @@ public class BLEReceiveService extends Service {
             if (null == gattCharacteristic) return;
             gatt.setCharacteristicNotification(gattCharacteristic, true);
 
+//            /* Checkout the UUID of the Characteristic */
 //            handler.post(new Runnable() {
 //                @Override
 //                public void run() {
@@ -135,7 +150,9 @@ public class BLEReceiveService extends Service {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor,
                                       final int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
+            /* Check whether the BLEReceiveService is running */
             if (!RUNNING) {
+                /* If the service is not running, disconnect the bluetooth */
                 gatt.disconnect();
                 return;
             }
@@ -164,7 +181,9 @@ public class BLEReceiveService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
+            /* Check whether the BLEReceiveService is running */
             if (!RUNNING) {
+                /* If the service is not running, disconnect the bluetooth */
                 gatt.disconnect();
                 return;
             }
@@ -175,11 +194,8 @@ public class BLEReceiveService extends Service {
 //                    Toast.makeText(BLEReceiveService.this, "changed " + characteristic.getUuid().toString(), Toast.LENGTH_SHORT).show();
 //                }
 //            });
-            if (RUNNING) {
-                update(gatt, characteristic);
-            } else {
-                gatt.disconnect();
-            }
+
+            update(gatt, characteristic);
         }
 
         private void update(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -189,21 +205,27 @@ public class BLEReceiveService extends Service {
                 @Override
                 public void run() {
                     int value = ByteBuffer.wrap(data, 4, 2).getShort();
-                    double new_value = ((double) value) / 219;
+                    double new_value = ((double) value) / 219; // ?
                     Intent intent = new Intent();
                     intent.setAction(Common.BROADCAST_DATA_UPDATE);
                     intent.putExtra("new_value", new_value);
+                    /* Broadcast the information that new data is received */
                     sendBroadcast(intent);
                 }
             });
         }
     };
 
+    /**
+     * Generate UUID from an integer i
+     * @param i
+     * @return
+     */
     public static UUID convertFromInteger(int i) {
         final long MSB = 0x0000000000001000L;
         final long LSB = 0x800000805f9b34fbL;
         long value = i & 0xFFFFFFFF;
-        return new UUID(MSB | (value << 32), LSB);
+        return new UUID(MSB | (value << 32), LSB); // UUID(long mostSigBits, long leastSigBits)
     }
 
     @Override
@@ -215,7 +237,9 @@ public class BLEReceiveService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(getClass().getSimpleName(), "start");
 
+        /* Get the BluetoothManager */
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        /* Get the BluetoothAdapter */
         btAdapter = btManager.getAdapter();
         if (btAdapter == null || !btAdapter.isEnabled()) {
             Log.e(getClass().getSimpleName(), "Bluetooth not enabled");
@@ -223,8 +247,10 @@ public class BLEReceiveService extends Service {
             return Service.START_NOT_STICKY;
         }
 
+        /* Get the BluetoothScanner */
         bleScanner = btAdapter.getBluetoothLeScanner();
-        List<ScanFilter> bleFilter = new ArrayList<>();
+        /* Set up the needed object for scanning (bleFilter, bleSettings) */
+        List<ScanFilter> bleFilter = new ArrayList<>(); // bleFilter is an empty array, it is created to avoid scanning turned off on screen off (see startScan description)
         ScanSettings bleSettings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .build();

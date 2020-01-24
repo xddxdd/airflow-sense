@@ -1,13 +1,10 @@
 package lantian.airflowsense;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,13 +22,19 @@ import lantian.airflowsense.weather.WeatherData;
 import lantian.airflowsense.weather.WeatherHelper;
 
 public class MainActivity extends AppCompatActivity {
-    DataUpdateReceiver dataUpdateReceiver = new DataUpdateReceiver();
+    DataUpdateReceiver dataUpdateReceiver = new DataUpdateReceiver(); // The BroadcastReceiver that listens to the new data income and the change of connection status
     IntentFilter intentFilter = new IntentFilter();
-    WeatherHelper weatherHelper = new WeatherHelper();
+    WeatherHelper weatherHelper = new WeatherHelper(); // A manager that get weather information from HeWeather App
 
+    /**
+     * refreshWeather
+     * Refresh the weather information when needed
+     */
     private void refreshWeather() {
+        /* Disable the refresh_weather button */
         findViewById(R.id.button_refresh_weather).setEnabled(false);
 
+        /* Get the entities of weather related TextView components */
         final TextView textWeather = findViewById(R.id.text_weather);
         final TextView textUpdateTime = findViewById(R.id.text_update_time);
         final TextView textTemperature = findViewById(R.id.text_temperature);
@@ -39,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         final TextView textHumidity = findViewById(R.id.text_humidity);
         final TextView textAQI = findViewById(R.id.text_aqi);
 
+        /* Print the waiting information */
         textWeather.setText("正在刷新");
         textUpdateTime.setText("---");
         textTemperature.setText("--");
@@ -46,12 +50,16 @@ public class MainActivity extends AppCompatActivity {
         textHumidity.setText("--");
         textAQI.setText("---");
 
-        weatherHelper.fetchWeatherAsync(this, new WeatherCallback() {
+        /* Get the information */
+        weatherHelper.fetchWeatherAsync(this, new WeatherCallback() { // WeatherCallback is an abstract class with only a callback function header
             @Override
             public void callback(final WeatherData data) {
+                /* Run something on the main thread (UI Thread) */
                 runOnUiThread(new Runnable() {
                     @Override
+                    /* Code to be run on main thread */
                     public void run() {
+                        /* Display the data/failure information onto the screen */
                         try {
                             if (data.isReady()) {
                                 textWeather.setText(data.weather);
@@ -59,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                                 textTemperature.setText(data.temperature);
                                 textLocation.setText(data.location);
                                 textHumidity.setText(data.humidity);
-                                textAQI.setText(data.aqi + " (" + data.aqi_level + ")");
+                                textAQI.setText(String.format("%s (%s)", data.aqi, data.aqi_level));
                             } else {
                                 textWeather.setText("获取失败");
                                 textUpdateTime.setText("---");
@@ -72,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
                         } catch (NullPointerException npe) {
                             npe.printStackTrace();
                         }
+                        /* ReEnable the refresh_weather button */
                         findViewById(R.id.button_refresh_weather).setEnabled(true);
                     }
                 });
@@ -79,26 +88,24 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private BLEReceiveService serviceInstance;
-
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            serviceInstance = ((BLEReceiveService.MyBinder) service).getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            serviceInstance = null;
-        }
-    };
-
+    /**
+     * startDataReceiveService
+     * Start the BLEReceiveService
+     */
     private void startDataReceiveService() {
-        startService(new Intent(this, BLEReceiveService.class));
+        if (!BLEReceiveService.RUNNING) {
+            startService(new Intent(this, BLEReceiveService.class));
+        }
     }
 
+    /**
+     * stopDataReceiveService
+     * Stop the BLEReceiverService
+     */
     private void stopDataReceiveService() {
-        stopService(new Intent(this, BLEReceiveService.class));
+        if (BLEReceiveService.RUNNING){
+            stopService(new Intent(this, BLEReceiveService.class));
+        }
     }
 
     @Override
@@ -108,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
@@ -123,18 +131,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /* Automatically generated code */
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // Bind the activity_main.xml layout
 
+        /* Set up the intentFilter (Registered in onResume function) */
+        // Call the onReceive function in dataUpdateReceiver whenever new data point is received (BROADCAST_DATA_UPDATE)
+        // or bluetooth connection status is changed (BROADCAST_CONNECTION_STATUS_UPDATE)
         intentFilter.addAction(Common.BROADCAST_DATA_UPDATE);
         intentFilter.addAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
-        registerReceiver(dataUpdateReceiver, intentFilter);
 
+        /* Set up the toolbar */
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar); // Replace action bar with toolbar
 
-//        startDataReceiveService();
-
+        /* Set the onClick event handler of refresh_weather button */
         findViewById(R.id.button_refresh_weather).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -142,20 +153,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        /* Refresh the weather when initializing */
         refreshWeather();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(dataUpdateReceiver);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(dataUpdateReceiver, intentFilter);
-//        startDataReceiveService();
+        registerReceiver(dataUpdateReceiver, intentFilter); // Register the BroadcastReceiver with the well-setting intentFilter
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(dataUpdateReceiver); // Unregister the BroadcastReceiver
     }
 
     @Override
@@ -164,11 +175,17 @@ public class MainActivity extends AppCompatActivity {
         stopDataReceiveService();
     }
 
+    /**
+     * DataUpdateReceiver
+     * The BroadcastReceiver that listens to the new data income and the change of connection status
+     */
     public class DataUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(Common.BROADCAST_DATA_UPDATE.equals(intent.getAction())) {
+                /* Get the new data point */
                 final double new_value = intent.getDoubleExtra("new_value", 0.0);
+                /* Get the plotter element */
                 final DataPlotView dpv = findViewById(R.id.dataplot);
 
                 // Ignore the latest data point in calculation purposely
@@ -190,10 +207,13 @@ public class MainActivity extends AppCompatActivity {
                         dpv.getRecentDataAverage(1)
                 );
 
+                /* Process the new data point */
+                dpv.addDataPoint(new_value);
+
+                /* Update the UI */
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dpv.addDataPoint(new_value);
                         ((TextView) findViewById(R.id.textbox)).setText(recent_average);
                         ((TextView) findViewById(R.id.text_max_value)).setText(recent_max);
                         ((TextView) findViewById(R.id.text_min_value)).setText(recent_min);
@@ -206,18 +226,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             } else if(Common.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {
+                /* Connection status is changed */
+                /* Get the present status and device's name */
                 final boolean connected = intent.getBooleanExtra("connected", false);
                 final String name = intent.getStringExtra("name");
 
+                /* Update the UI */
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(connected) {
-//                            getSupportActionBar().setTitle("呼吸监测设备 已连接");
-                            getSupportActionBar().setTitle(name + " 已连接");
-                        } else {
-//                            getSupportActionBar().setTitle("呼吸监测设备 连接中断");
-                            getSupportActionBar().setTitle(name + " 连接中断");
+                        if (getSupportActionBar() != null) {
+                            if (connected) {
+                                getSupportActionBar().setTitle(String.format("%s 已连接", name));
+                            } else {
+                                getSupportActionBar().setTitle(String.format("%s 连接中断", name));
+                            }
                         }
                     }
                 });
