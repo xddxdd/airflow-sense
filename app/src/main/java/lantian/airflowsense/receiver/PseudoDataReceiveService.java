@@ -9,7 +9,7 @@ import android.util.Log;
 
 import java.util.Random;
 
-import lantian.airflowsense.Common;
+import lantian.airflowsense.norm.Common;
 
 public class PseudoDataReceiveService extends Service {
     public static boolean RUNNING = false;

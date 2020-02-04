@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import lantian.airflowsense.Common;
+import lantian.airflowsense.norm.Common;
 
 public class BLEReceiveService extends Service {
     public static boolean RUNNING = false; // Indicating the running state of the BLEReceiveService

@@ -17,6 +17,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".authorization.LoginPage"></activity>
+        <activity android:name=".authorization.RegisterPage"></activity>
+
         <service
             android:name=".receiver.SampleDataReceiveService"
             android:enabled="true"

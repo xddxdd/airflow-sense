@@ -1,4 +1,6 @@
-package lantian.airflowsense;
+package lantian.airflowsense.norm;
+
+import lantian.airflowsense.BuildConfig;
 
 public class Common {
     public static String BROADCAST_DATA_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.data_update";

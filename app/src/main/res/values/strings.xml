@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">AirflowSense</string>
+    <string name="USER_NAME_HINT">用户名（最多20个字）</string>
+    <string name="PASSWORD_HINT">密码（6~12个字符）</string>
+    <string name="NEW_PASSWORD_HINT">输入新密码</string>
+    <string name="RE_PASSWORD_HINT">再次输入新密码</string>
+    <string name="LOGIN_BUTTON">登录</string>
+    <string name="REGISTER_BUTTON">注册</string>
 </resources>

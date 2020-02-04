@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import lantian.airflowsense.Common;
+import lantian.airflowsense.norm.Common;
 
 public class SampleDataReceiveService extends Service {
     public static boolean RUNNING = false;
