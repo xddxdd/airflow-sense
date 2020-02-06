@@ -2,13 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menu_connect"
-        android:icon="@drawable/ic_check_white_24dp"
-        android:title="Connect"
-        app:showAsAction="always" />
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="hello"
+        app:showAsAction="never" />
+
     <item
-        android:id="@+id/menu_disconnect"
-        android:icon="@drawable/ic_close_white_24dp"
-        android:title="Connect"
-        app:showAsAction="always" />
+        android:id="@+id/menu_upload"
+        android:icon="@android:drawable/ic_menu_upload"
+        android:title="upload"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_delete"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="delete"
+        app:showAsAction="ifRoom" />
 </menu>
