@@ -1,32 +1,26 @@
 package lantian.airflowsense;
 
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
-
-import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.net.Uri;
 
-import lantian.airflowsense.receiver.BLEReceiveService;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import lantian.airflowsense.weather.WeatherCallback;
 import lantian.airflowsense.weather.WeatherData;
 import lantian.airflowsense.weather.WeatherHelper;
+import lantian.airflowsense.FloatingService.FloatWindowService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,8 +38,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                startFloatingService(view);
             }
         });
 
@@ -76,6 +69,23 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0) {
+            if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, "授权失败", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+//                    startForegroundService(new Intent(MainActivity.this, FloatWindowService.class));
+//                }else {
+                    startService(new Intent(MainActivity.this, FloatWindowService.class));
+//                }
+            }
+        }
     }
 
     /**
@@ -134,5 +144,18 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    public void startFloatingService(View v){
+        if (!Settings.canDrawOverlays(this)){
+            Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
+            startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
+        }else {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+//                startForegroundService(new Intent(MainActivity.this, FloatWindowService.class));
+//            }else {
+                startService(new Intent(MainActivity.this, FloatWindowService.class));
+//            }
+        }
     }
 }

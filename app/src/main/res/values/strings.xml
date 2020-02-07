@@ -48,4 +48,9 @@
         555555555555
         555555555555
         "</string>
+
+    <!-- Floating Window -->
+    <string name="max_head">"最大值："</string>
+    <string name="min_head">"最小值："</string>
+    <string name="ave_head">"平均值："</string>
 </resources>

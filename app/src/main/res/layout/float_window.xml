@@ -1,6 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="300dp"
+    android:background="#2b2b2b"
+    android:id="@+id/float_window">
 
-</LinearLayout>
+    <RelativeLayout
+        android:id="@+id/data_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/text_margin">
+
+            <TextView
+                android:id="@+id/text_max_head"
+                android:text="@string/max_head"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/text_max"
+                android:text="0.00"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/text_max_head"
+                android:layout_alignBottom="@id/text_max_head"
+                android:textColor="@android:color/white" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true">
+
+            <TextView
+                android:id="@+id/text_min_head"
+                android:text="@string/min_head"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/text_min"
+                android:text="0.00"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/text_min_head"
+                android:layout_alignBottom="@id/text_min_head"
+                android:textColor="@android:color/white"/>
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/text_margin"
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:id="@+id/text_ave_head"
+                android:text="@string/ave_head"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"/>
+
+            <TextView
+                android:id="@+id/text_ave"
+                android:text="0.00"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/text_ave_head"
+                android:layout_alignBottom="@id/text_ave_head"
+                android:textColor="@android:color/white"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/text_now"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="0.00"
+        android:layout_below="@id/data_list"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_mid" />
+
+    <lantian.airflowsense.DataPlotView
+        android:id="@+id/data_plot"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:layout_below="@+id/text_now"/>
+
+    <ImageView
+        android:id="@+id/control_btn"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:layout_below="@id/data_plot"
+        android:layout_centerHorizontal="true"
+        android:src="@android:drawable/ic_media_play"/>
+
+</RelativeLayout>
