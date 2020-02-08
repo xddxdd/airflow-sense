@@ -6,9 +6,12 @@ import android.os.IBinder;
 
 public class FloatWindowService extends Service {
 
+    private static boolean enabled = false;
+
     @Override
     public void onCreate(){
         super.onCreate();
+        enabled = true;
         FloatWindowManager.init(getApplicationContext());
     }
     @Override
@@ -23,6 +26,15 @@ public class FloatWindowService extends Service {
     @Override
     public void onDestroy(){
         super.onDestroy();
+        enabled = false;
         FloatWindowManager.removeWindow();
+    }
+
+    public static boolean isEnabled(){
+        return enabled;
+    }
+
+    public static void setFloatWindowData(double new_value){
+        FloatWindowManager.updateFloatWindowData(new_value);
     }
 }

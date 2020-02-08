@@ -12,6 +12,8 @@ import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import lantian.airflowsense.DataPlotView;
 import lantian.airflowsense.R;
 
@@ -20,10 +22,12 @@ class FloatWindowView extends RelativeLayout{
     WindowManager windowManager;
     WindowManager.LayoutParams params;
 
+    DataPlotView dataPlotView;
+
     private float xInScreen; // The present X value of the finger in the screen
     private float yInScreen; // The present Y value of the finger in the screen
-    private float xInWindow; // The present X value of the finger in the view
-    private float yInWindow; // The present Y value of the finger in the view
+    private int xViewInWindow; // The present X value of the finger in the view
+    private int yViewInWindow; // The present Y value of the finger in the view
 
     public FloatWindowView(Context context){
         super(context);
@@ -35,6 +39,7 @@ class FloatWindowView extends RelativeLayout{
         LayoutInflater.from(context).inflate(R.layout.float_window, this);
         final View window = findViewById(R.id.float_window);
 
+        dataPlotView = findViewById(R.id.data_plot);
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(dm);
         int screenWidth = dm.widthPixels;
@@ -70,18 +75,18 @@ class FloatWindowView extends RelativeLayout{
                 int action = event.getAction();
                 if (action == MotionEvent.ACTION_DOWN) {
                     // Record the position where the finger pressed on
-                    xInWindow = event.getX();
-                    yInWindow = event.getY();
+                    xViewInWindow = params.x;
+                    yViewInWindow = params.y;
                     xInScreen = event.getRawX();
                     yInScreen = event.getRawY();
                 }else if (action == MotionEvent.ACTION_MOVE){
-                    float move_x = (event.getRawX() - xInScreen) - (event.getX() - xInWindow);
-                    float move_y = (event.getRawY() - yInScreen) - (event.getY() - yInWindow);
-                    params.x += (int) move_x;
-                    params.y += (int) move_y;
-                    windowManager.updateViewLayout(window, params);
+                    float move_x = (event.getRawX() - xInScreen);
+                    float move_y = (event.getRawY() - yInScreen);
+                    params.x = (int) (xViewInWindow + move_x);
+                    params.y = (int) (yViewInWindow + move_y);
+                    windowManager.updateViewLayout(FloatWindowView.this, params);
                 }
-                return false;
+                return true;
             }
         });
     }
@@ -90,11 +95,37 @@ class FloatWindowView extends RelativeLayout{
         windowManager.addView(this, params);
     }
 
-    public void updateText (String text_max, String text_min, String text_ave, String text_now){
-        ((TextView)findViewById(R.id.text_max)).setText(text_max);
-        ((TextView)findViewById(R.id.text_min)).setText(text_min);
-        ((TextView)findViewById(R.id.text_ave)).setText(text_ave);
-        ((TextView)findViewById(R.id.text_now)).setText(text_now);
+    public void updateData (double new_data){
+        // Ignore the latest data point in calculation purposely
+        // To improve UI drawing performance
+        // (Data inaccuracy here is insignificant anyways)
+        final double now_text = new_data;
+
+        post(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.text_max)).setText(String.format(
+                        Locale.SIMPLIFIED_CHINESE,
+                        "%.2f",
+                        dataPlotView.getRecentDataMax(0)));
+
+                ((TextView)findViewById(R.id.text_min)).setText(String.format(
+                        Locale.SIMPLIFIED_CHINESE,
+                        "%.2f",
+                        dataPlotView.getRecentDataMin(0)));
+
+                ((TextView)findViewById(R.id.text_ave)).setText(String.format(
+                        Locale.SIMPLIFIED_CHINESE,
+                        "%.2f",
+                        dataPlotView.getRecentDataAverage(0)));
+
+                ((TextView)findViewById(R.id.text_now)).setText(String.format(
+                        Locale.SIMPLIFIED_CHINESE,
+                        "%.2f",
+                        now_text));
+            }
+        });
+        dataPlotView.addDataPoint(new_data);
     }
 }
 

@@ -31,7 +31,9 @@ public class FloatWindowManager {
         }
     }
 
-    public static void updateUsedPercent(Context context) {
-
+    public static void updateFloatWindowData(double new_value) {
+        if (floatWindowView != null){
+            floatWindowView.updateData(new_value);
+        }
     }
 }

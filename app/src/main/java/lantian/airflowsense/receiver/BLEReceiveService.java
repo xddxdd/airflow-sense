@@ -16,7 +16,6 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -175,11 +174,7 @@ public class BLEReceiveService extends Service {
 //                    Toast.makeText(BLEReceiveService.this, "changed " + characteristic.getUuid().toString(), Toast.LENGTH_SHORT).show();
 //                }
 //            });
-            if (RUNNING) {
-                update(gatt, characteristic);
-            } else {
-                gatt.disconnect();
-            }
+            update(gatt, characteristic);
         }
 
         private void update(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -208,7 +203,7 @@ public class BLEReceiveService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return new MyBinder();
+        return null;
     }
 
     @Override
@@ -250,12 +245,6 @@ public class BLEReceiveService extends Service {
         });
         if (null != btGatt) {
             btGatt.disconnect();
-        }
-    }
-
-    public class MyBinder extends Binder {
-        public BLEReceiveService getService() {
-            return BLEReceiveService.this;
         }
     }
 }
