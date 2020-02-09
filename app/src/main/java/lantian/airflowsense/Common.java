@@ -3,8 +3,11 @@ package lantian.airflowsense;
 import lantian.airflowsense.BuildConfig;
 
 public class Common {
-    public static String BROADCAST_DATA_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.data_update";
-    public static String BROADCAST_CONNECTION_STATUS_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.connection_status_update";
+    public class Action {
+        public static final String BROADCAST_DATA_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.data_update";
+        public static final String BROADCAST_CONNECTION_STATUS_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.connection_status_update";
+        public static final String FLOAT_WINDOW_STATUS_UPDATE = "float_window_status_update";
+    }
 
     public class PacketParams {
         public static final String USER_NAME = "user_name";
@@ -12,6 +15,10 @@ public class Common {
         public static final String ERRORCODE = "error";
         public static final String INSTRUCTION = "instruction";
         public static final String OPERATION = "operation";
+
+        public static final String CONNECTIVITY = "connectivity";
+        public static final String NEW_VALUE = "new_value";
+        public static final String FLOAT_WINDOW_SHOW = "float_window_show";
     }
 
     public class ErrorCode {

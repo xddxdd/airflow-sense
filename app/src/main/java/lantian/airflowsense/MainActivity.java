@@ -21,6 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import lantian.airflowsense.authorization.LoginPage;
 import lantian.airflowsense.receiver.BLEReceiveService;
+import lantian.airflowsense.receiver.SampleDataReceiveService;
 import lantian.airflowsense.weather.WeatherCallback;
 import lantian.airflowsense.weather.WeatherData;
 import lantian.airflowsense.weather.WeatherHelper;
@@ -28,12 +29,11 @@ import lantian.airflowsense.FloatingService.FloatWindowService;
 
 public class MainActivity extends AppCompatActivity {
 
-    DataUpdateReceiver dataUpdateReceiver = new DataUpdateReceiver(); // The BroadcastReceiver that listens to the new data income and the change of connection status
-    IntentFilter intentFilter = new IntentFilter();
+    BLEUpdateReceiver bleUpdateReceiver = new BLEUpdateReceiver(); // The BroadcastReceiver that listens to the new data income and the change of connection status
+    FloatWindowReceiver floatWindowReceiver = new FloatWindowReceiver();
     WeatherHelper weatherHelper = new WeatherHelper(); // A manager that get weather information from HeWeather App
 
     private String UserName = "";
-    private boolean BLEConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +43,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /* Set up the intentFilter (Registered in onResume function) */
-        // Call the onReceive function in dataUpdateReceiver whenever new data point is received (BROADCAST_DATA_UPDATE)
-        // or bluetooth connection status is changed (BROADCAST_CONNECTION_STATUS_UPDATE)
-        intentFilter.addAction(Common.BROADCAST_DATA_UPDATE);
-        intentFilter.addAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
+        registerFloatWindowReceiver();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startBLEReceiveService();
+//                if (BLEReceiveService.isConnected()){ // For real implement
+                if (SampleDataReceiveService.isConnected()){ // For test
+                    startFloatingService();
+                }else {
+                    Toast.makeText(MainActivity.this, "蓝牙未连接", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -72,16 +73,16 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        switch (id){
+        switch (item.getItemId()){
             case R.id.login_btn:
                 if (UserName.isEmpty()){
                     startActivityForResult(new Intent(MainActivity.this, LoginPage.class), Common.RequestCode.REQ_LOGIN);
                 }
                 break;
             case R.id.ble_btn:
-                if (BLEConnected){
+//                if (BLEReceiveService.isConnected()){ // For real implement
+                if (SampleDataReceiveService.isConnected()){ // For test
                     stopBLEReceiveService();
                 }else {
                     startBLEReceiveService();
@@ -108,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
         }else {
             menu.findItem(R.id.login_btn).setTitle("登录");
         }
-        if (BLEConnected){
+//        if (BLEReceiveService.isConnected()){ // For real implement
+        if (SampleDataReceiveService.isConnected()){ // For test
             menu.findItem(R.id.ble_btn).setTitle("断开蓝牙");
         }else {
             menu.findItem(R.id.ble_btn).setTitle("连接蓝牙");
@@ -119,13 +121,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
-        registerReceiver(dataUpdateReceiver, intentFilter); // Register the BroadcastReceiver with the well-setting intentFilter
     }
 
     @Override
     public void onPause(){
         super.onPause();
-        unregisterReceiver(dataUpdateReceiver); // Unregister the BroadcastReceiver
     }
 
     @Override
@@ -139,16 +139,17 @@ public class MainActivity extends AppCompatActivity {
                 startService(new Intent(MainActivity.this, FloatWindowService.class));
             }
         }else if (requestCode == Common.RequestCode.REQ_LOGIN){
-            UserName = data.getStringExtra("user_name");
+            if (resultCode == RESULT_OK){
+                UserName = data.getStringExtra(Common.PacketParams.USER_NAME);
+            }
         }
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
-        if (FloatWindowService.isEnabled()){
-            stopService(new Intent(MainActivity.this, FloatWindowService.class));
-        }
+        stopFloatingService();
+        unRegisterFloatWindowReceiver();
         stopBLEReceiveService();
     }
 
@@ -221,13 +222,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void stopFloatingService(){
+        if (FloatWindowService.isEnabled()){
+            stopService(new Intent(MainActivity.this, FloatWindowService.class));
+        }
+    }
+
     /**
      * startBLEReceiveService
      * Start the BLEReceiveService
      */
     private void startBLEReceiveService() {
-        if (!BLEReceiveService.RUNNING) {
-            startService(new Intent(this, BLEReceiveService.class));
+        /* For real implement */
+//        if (!BLEReceiveService.RUNNING) {
+//            startService(new Intent(this, BLEReceiveService.class));
+//        }
+        /* For test */
+        if (!SampleDataReceiveService.RUNNING){
+            startService(new Intent(this, SampleDataReceiveService.class));
         }
     }
 
@@ -236,9 +248,42 @@ public class MainActivity extends AppCompatActivity {
      * Stop the BLEReceiverService
      */
     private void stopBLEReceiveService() {
-        if (BLEReceiveService.RUNNING){
-            stopService(new Intent(this, BLEReceiveService.class));
+        /* For real implement */
+//        if (BLEReceiveService.RUNNING){
+//            stopService(new Intent(this, BLEReceiveService.class));
+//        }
+        /* For test */
+        if (SampleDataReceiveService.RUNNING){
+            stopService(new Intent(this, SampleDataReceiveService.class));
         }
+    }
+
+    /**
+     * registerBLEReceiver
+     * Call the onReceive function in bleUpdateReceiver whenever new data point is received (BROADCAST_DATA_UPDATE)
+     * or bluetooth connection status is changed (BROADCAST_CONNECTION_STATUS_UPDATE)
+     */
+    private void registerBLEReceiver(){
+        IntentFilter intentFilter = new IntentFilter();
+        /* Set up the intentFilter */
+        intentFilter.addAction(Common.Action.BROADCAST_DATA_UPDATE);
+        intentFilter.addAction(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE);
+        registerReceiver(bleUpdateReceiver, intentFilter); // Register the BroadcastReceiver
+    }
+
+    private void unRegisterBLEReceiver(){
+        unregisterReceiver(bleUpdateReceiver); // Unregister the BroadcastReceiver
+    }
+
+    private void registerFloatWindowReceiver(){
+        IntentFilter intentFilter = new IntentFilter();
+        /* Set up the intentFilter */
+        intentFilter.addAction(Common.Action.FLOAT_WINDOW_STATUS_UPDATE);
+        registerReceiver(floatWindowReceiver, intentFilter); // Register the BroadcastReceiver
+    }
+
+    private void unRegisterFloatWindowReceiver(){
+        unregisterReceiver(floatWindowReceiver); // Unregister the BroadcastReceiver
     }
 
     /*------------------------------------------------------- Data Receiver Class -------------------------------------------------------*/
@@ -247,21 +292,21 @@ public class MainActivity extends AppCompatActivity {
      * DataUpdateReceiver
      * The BroadcastReceiver that listens to the new data income and the change of connection status
      */
-    public class DataUpdateReceiver extends BroadcastReceiver {
+    private class BLEUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(Common.BROADCAST_DATA_UPDATE.equals(intent.getAction())) {
+            if(Common.Action.BROADCAST_DATA_UPDATE.equals(intent.getAction())) {
                 /* Get the new data point */
-                final double new_value = intent.getDoubleExtra("new_value", 0.0);
+                final double new_value = intent.getDoubleExtra(Common.PacketParams.NEW_VALUE, 0.0);
                 /* Get the plotter element */
                 if (FloatWindowService.isEnabled()){
                     FloatWindowService.setFloatWindowData(new_value);
                 }
 
-            } else if(Common.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {
+            } else if(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {
                 /* Connection status is changed */
                 /* Get the present status and device's name */
-                final boolean connected = intent.getBooleanExtra("connected", false);
+                final boolean connected = intent.getBooleanExtra(Common.PacketParams.CONNECTIVITY, false);
                 final String name = intent.getStringExtra("name");
 
                 /* Update the UI */
@@ -277,10 +322,18 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+            }
+        }
+    }
 
-                /* Start the float window service when bluetooth is connected */
-                if (connected && !FloatWindowService.isEnabled()){
-                    startFloatingService();
+    private class FloatWindowReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Common.Action.FLOAT_WINDOW_STATUS_UPDATE.equals(intent.getAction())){
+                if (intent.getBooleanExtra(Common.PacketParams.FLOAT_WINDOW_SHOW, false)){
+                    registerBLEReceiver();
+                }else {
+                    unRegisterBLEReceiver();
                 }
             }
         }

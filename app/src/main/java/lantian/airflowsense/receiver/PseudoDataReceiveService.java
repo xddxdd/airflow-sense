@@ -2,7 +2,6 @@ package lantian.airflowsense.receiver;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -20,8 +19,8 @@ public class PseudoDataReceiveService extends Service {
             if (RUNNING) {
                 double new_value = random.nextFloat();
                 Intent intent = new Intent();
-                intent.setAction(Common.BROADCAST_DATA_UPDATE);
-                intent.putExtra("new_value", new_value);
+                intent.setAction(Common.Action.BROADCAST_DATA_UPDATE);
+                intent.putExtra(Common.PacketParams.NEW_VALUE, new_value);
                 sendBroadcast(intent);
                 Log.i(getClass().getSimpleName(), String.valueOf(new_value));
 
@@ -34,17 +33,11 @@ public class PseudoDataReceiveService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return new MyBinder();
+        return null;
     }
 
     private Random random = new Random();
     private Handler handler = new Handler();
-
-    public class MyBinder extends Binder {
-        public PseudoDataReceiveService getService() {
-            return PseudoDataReceiveService.this;
-        }
-    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -55,8 +48,8 @@ public class PseudoDataReceiveService extends Service {
             @Override
             public void run() {
                 Intent intent = new Intent();
-                intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
-                intent.putExtra("connected", true);
+                intent.setAction(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE);
+                intent.putExtra(Common.PacketParams.CONNECTIVITY, true);
                 intent.putExtra("name", "随机数产生器");
                 sendBroadcast(intent);
             }
@@ -73,8 +66,8 @@ public class PseudoDataReceiveService extends Service {
             @Override
             public void run() {
                 Intent intent = new Intent();
-                intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
-                intent.putExtra("connected", false);
+                intent.setAction(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE);
+                intent.putExtra(Common.PacketParams.CONNECTIVITY, false);
                 intent.putExtra("name", "随机数产生器");
                 sendBroadcast(intent);
             }

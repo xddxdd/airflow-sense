@@ -1,8 +1,10 @@
 package lantian.airflowsense.FloatingService;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -14,14 +16,16 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import lantian.airflowsense.Common;
 import lantian.airflowsense.DataPlotView;
 import lantian.airflowsense.R;
 
 class FloatWindowView extends RelativeLayout{
 
-    WindowManager windowManager;
-    WindowManager.LayoutParams params;
-
+    private WindowManager windowManager;
+    private WindowManager.LayoutParams params;
+    private Context myContext;
+    private Handler handler = new Handler();
     DataPlotView dataPlotView;
 
     private float xInScreen; // The present X value of the finger in the screen
@@ -31,6 +35,8 @@ class FloatWindowView extends RelativeLayout{
 
     public FloatWindowView(Context context){
         super(context);
+
+        myContext = context;
 
         /* Get the window manager */
         windowManager = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
@@ -66,9 +72,19 @@ class FloatWindowView extends RelativeLayout{
         findViewById(R.id.control_btn).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent();
+                        intent.setAction(Common.Action.FLOAT_WINDOW_STATUS_UPDATE);
+                        intent.putExtra(Common.PacketParams.FLOAT_WINDOW_SHOW, false);
+                        myContext.sendBroadcast(intent);
+                    }
+                });
                 FloatWindowManager.removeWindow();
             }
         });
+
         window.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -93,6 +109,15 @@ class FloatWindowView extends RelativeLayout{
 
     public void show(){
         windowManager.addView(this, params);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent();
+                intent.setAction(Common.Action.FLOAT_WINDOW_STATUS_UPDATE);
+                intent.putExtra(Common.PacketParams.FLOAT_WINDOW_SHOW, true);
+                myContext.sendBroadcast(intent);
+            }
+        });
     }
 
     public void updateData (double new_data){

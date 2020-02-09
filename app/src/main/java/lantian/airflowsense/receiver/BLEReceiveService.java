@@ -30,6 +30,7 @@ import lantian.airflowsense.Common;
 
 public class BLEReceiveService extends Service {
     public static boolean RUNNING = false;
+    private static boolean CONNECTED = false;
     BluetoothManager btManager;
     BluetoothAdapter btAdapter;
     BluetoothGatt btGatt;
@@ -70,12 +71,13 @@ public class BLEReceiveService extends Service {
             }
             if (status != BluetoothGatt.GATT_SUCCESS) return;
             if (newState == BluetoothGatt.STATE_CONNECTED) {
+                CONNECTED = true;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         Intent intent = new Intent();
-                        intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
-                        intent.putExtra("connected", true);
+                        intent.setAction(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE);
+                        intent.putExtra(Common.PacketParams.CONNECTIVITY, true);
                         intent.putExtra("name", "蓝牙");
                         sendBroadcast(intent);
                     }
@@ -84,12 +86,13 @@ public class BLEReceiveService extends Service {
 //                gatt.readCharacteristic(bleCharacteristic);
 //                gatt.setCharacteristicNotification(bleCharacteristic, true);
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                CONNECTED = false;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         Intent intent = new Intent();
-                        intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
-                        intent.putExtra("connected", false);
+                        intent.setAction(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE);
+                        intent.putExtra(Common.PacketParams.CONNECTIVITY, false);
                         intent.putExtra("name", "蓝牙");
                         sendBroadcast(intent);
                     }
@@ -174,10 +177,10 @@ public class BLEReceiveService extends Service {
 //                    Toast.makeText(BLEReceiveService.this, "changed " + characteristic.getUuid().toString(), Toast.LENGTH_SHORT).show();
 //                }
 //            });
-            update(gatt, characteristic);
+            update(characteristic);
         }
 
-        private void update(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        private void update(BluetoothGattCharacteristic characteristic) {
             final byte[] data = characteristic.getValue();
 
             handler.post(new Runnable() {
@@ -186,8 +189,8 @@ public class BLEReceiveService extends Service {
                     int value = ByteBuffer.wrap(data, 4, 2).getShort();
                     double new_value = ((double) value) / 219;
                     Intent intent = new Intent();
-                    intent.setAction(Common.BROADCAST_DATA_UPDATE);
-                    intent.putExtra("new_value", new_value);
+                    intent.setAction(Common.Action.BROADCAST_DATA_UPDATE);
+                    intent.putExtra(Common.PacketParams.NEW_VALUE, new_value);
                     sendBroadcast(intent);
                 }
             });
@@ -210,7 +213,15 @@ public class BLEReceiveService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(getClass().getSimpleName(), "start");
 
+        CONNECTED = false; // Initialize the connection state to false
+
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        if (btManager == null){
+            Log.e(getClass().getSimpleName(), "Bluetooth Manager not found");
+            Toast.makeText(this, "Bluetooth Manager not found", Toast.LENGTH_SHORT).show();
+            return Service.START_NOT_STICKY;
+        }
+
         btAdapter = btManager.getAdapter();
         if (btAdapter == null || !btAdapter.isEnabled()) {
             Log.e(getClass().getSimpleName(), "Bluetooth not enabled");
@@ -232,13 +243,14 @@ public class BLEReceiveService extends Service {
     @Override
     public void onDestroy() {
         RUNNING = false;
+        CONNECTED = false;
         bleScanner.stopScan(bleScanCallback);
         handler.post(new Runnable() {
             @Override
             public void run() {
                 Intent intent = new Intent();
-                intent.setAction(Common.BROADCAST_CONNECTION_STATUS_UPDATE);
-                intent.putExtra("connected", false);
+                intent.setAction(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE);
+                intent.putExtra(Common.PacketParams.CONNECTIVITY, false);
                 intent.putExtra("name", "蓝牙");
                 sendBroadcast(intent);
             }
@@ -246,5 +258,9 @@ public class BLEReceiveService extends Service {
         if (null != btGatt) {
             btGatt.disconnect();
         }
+    }
+
+    public static boolean isConnected(){
+        return RUNNING && CONNECTED;
     }
 }
