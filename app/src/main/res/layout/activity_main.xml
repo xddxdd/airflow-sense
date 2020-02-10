@@ -146,6 +146,13 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context=".MainActivity">
 
+        <ListView
+            android:id="@+id/list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </ListView>
+
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

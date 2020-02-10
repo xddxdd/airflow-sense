@@ -3,6 +3,11 @@ package lantian.airflowsense;
 import lantian.airflowsense.BuildConfig;
 
 public class Common {
+
+    public class Norms {
+        public static final String DEFAULT_USER_NAME = "default";
+    }
+
     public class Action {
         public static final String BROADCAST_DATA_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.data_update";
         public static final String BROADCAST_CONNECTION_STATUS_UPDATE = BuildConfig.APPLICATION_ID + ".broadcast.connection_status_update";

@@ -2,6 +2,7 @@ package lantian.airflowsense;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -9,9 +10,11 @@ import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -19,6 +22,7 @@ import android.net.Uri;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import lantian.airflowsense.FileManager.FileManager;
 import lantian.airflowsense.authorization.LoginPage;
 import lantian.airflowsense.receiver.BLEReceiveService;
 import lantian.airflowsense.receiver.SampleDataReceiveService;
@@ -301,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
                 /* Get the plotter element */
                 if (FloatWindowService.isEnabled()){
                     FloatWindowService.setFloatWindowData(new_value);
+                    FileManager.addTempData(new_value);
                 }
 
             } else if(Common.Action.BROADCAST_CONNECTION_STATUS_UPDATE.equals(intent.getAction())) {
@@ -331,9 +336,30 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if (Common.Action.FLOAT_WINDOW_STATUS_UPDATE.equals(intent.getAction())){
                 if (intent.getBooleanExtra(Common.PacketParams.FLOAT_WINDOW_SHOW, false)){
+                    FileManager.createTempFile();
                     registerBLEReceiver();
                 }else {
                     unRegisterBLEReceiver();
+                    final EditText fileName = new EditText(MainActivity.this);
+                    fileName.setText(FileManager.getDefaultFileName());
+
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("测量结束")
+                            .setIcon(android.R.drawable.ic_dialog_info)
+                            .setView(fileName).
+                            setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    boolean data_saved = FileManager.saveData(UserName, fileName.getText().toString());
+                                    if (!data_saved)
+                                        Toast.makeText(MainActivity.this, "数据储存失败", Toast.LENGTH_SHORT).show();
+                                }})
+                            .setNegativeButton("放弃", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    FileManager.dumpData();
+                                }})
+                            .show();
                 }
             }
         }
