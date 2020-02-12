@@ -32,11 +32,11 @@ public class RegisterPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_page); // Bind the login_page.xml layout
 
-        name = findViewById(R.id.user_name);
-        password = findViewById(R.id.password);
-        re_password = findViewById(R.id.re_password);
+        name = findViewById(R.id.register_page_user_name);
+        password = findViewById(R.id.register_page_password);
+        re_password = findViewById(R.id.register_page_re_password);
 
-        (findViewById(R.id.register_button)).setOnClickListener(new View.OnClickListener(){
+        (findViewById(R.id.register_page_register_button)).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 String name_txt = name.getText().toString();

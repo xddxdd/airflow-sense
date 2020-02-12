@@ -4,25 +4,25 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/user_name"
+        android:id="@+id/login_page_user_name"
         android:hint="@string/USER_NAME_HINT"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/login_page_password"
         android:hint="@string/PASSWORD_HINT"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/login_button"
+        android:id="@+id/login_page_login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/LOGIN_BUTTON" />
 
     <Button
-        android:id="@+id/register_button"
+        android:id="@+id/login_page_register_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/REGISTER_BUTTON" />

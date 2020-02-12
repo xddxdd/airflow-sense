@@ -144,14 +144,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".MainActivity">
+        tools:context=".MainActivity"
+        android:id="@+id/scrollView">
 
-        <ListView
+        <lantian.airflowsense.ListView.ListViewForScrollView
             android:id="@+id/list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        </ListView>
+        </lantian.airflowsense.ListView.ListViewForScrollView>
 
     </androidx.core.widget.NestedScrollView>
 

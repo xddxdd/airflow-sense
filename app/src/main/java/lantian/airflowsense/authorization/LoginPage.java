@@ -11,11 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-
 import lantian.airflowsense.Common;
 import lantian.airflowsense.R;
 
@@ -31,16 +26,16 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_page); // Bind the login_page.xml layout
 
-        (findViewById(R.id.login_button)).setOnClickListener(LoginPage.this);
-        (findViewById(R.id.register_button)).setOnClickListener(LoginPage.this);
-        name = findViewById(R.id.user_name);
-        password = findViewById(R.id.password);
+        (findViewById(R.id.login_page_login_button)).setOnClickListener(LoginPage.this);
+        (findViewById(R.id.login_page_register_button)).setOnClickListener(LoginPage.this);
+        name = findViewById(R.id.login_page_user_name);
+        password = findViewById(R.id.login_page_password);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.login_button:
+            case R.id.login_page_login_button:
                 String name_txt = name.getText().toString();
                 String password_txt = password.getText().toString();
 
@@ -122,10 +117,10 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
 //                    }
 //                }).start();
                 break;
-            case R.id.register_button:
+            case R.id.login_page_register_button:
                 startActivityForResult(new Intent(LoginPage.this, RegisterPage.class), Common.RequestCode.REQ_REGISTER);
                 break;
-            case R.id.user_name:
+            case R.id.login_page_user_name:
                 break;
             default:
         }

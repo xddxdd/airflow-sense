@@ -1,5 +1,7 @@
 package lantian.airflowsense;
 
+import android.Manifest;
+
 import lantian.airflowsense.BuildConfig;
 
 public class Common {
@@ -46,5 +48,11 @@ public class Common {
         public static final int REQ_LOGIN = 0;
         public static final int REQ_REGISTER = 1;
         public static final int REQ_OVERLAY_PERMISSION = 2;
+        public static final int REQUEST_READ_WRITE_PERMISSION_CODE = 1; // R&W Request State Code
     }
+
+    // Read & Write permission
+    public static final String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 }

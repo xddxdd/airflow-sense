@@ -7,7 +7,7 @@
     android:id="@+id/float_window">
 
     <RelativeLayout
-        android:id="@+id/data_list"
+        android:id="@+id/float_window_data_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/text_margin"
@@ -19,19 +19,19 @@
             android:layout_marginStart="@dimen/text_margin">
 
             <TextView
-                android:id="@+id/text_max_head"
+                android:id="@+id/float_window_text_max_head"
                 android:text="@string/max_head"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"/>
 
             <TextView
-                android:id="@+id/text_max"
+                android:id="@+id/float_window_text_max"
                 android:text="0.00"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/text_max_head"
-                android:layout_alignBottom="@id/text_max_head"
+                android:layout_toEndOf="@id/float_window_text_max_head"
+                android:layout_alignBottom="@id/float_window_text_max_head"
                 android:textColor="@android:color/white" />
 
         </RelativeLayout>
@@ -42,19 +42,19 @@
             android:layout_centerHorizontal="true">
 
             <TextView
-                android:id="@+id/text_min_head"
+                android:id="@+id/float_window_text_min_head"
                 android:text="@string/min_head"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"/>
 
             <TextView
-                android:id="@+id/text_min"
+                android:id="@+id/float_window_text_min"
                 android:text="0.00"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/text_min_head"
-                android:layout_alignBottom="@id/text_min_head"
+                android:layout_toEndOf="@id/float_window_text_min_head"
+                android:layout_alignBottom="@id/float_window_text_min_head"
                 android:textColor="@android:color/white"/>
 
         </RelativeLayout>
@@ -67,19 +67,19 @@
             android:layout_alignParentEnd="true">
 
             <TextView
-                android:id="@+id/text_ave_head"
+                android:id="@+id/float_window_text_ave_head"
                 android:text="@string/ave_head"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"/>
 
             <TextView
-                android:id="@+id/text_ave"
+                android:id="@+id/float_window_text_ave"
                 android:text="0.00"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/text_ave_head"
-                android:layout_alignBottom="@id/text_ave_head"
+                android:layout_toEndOf="@id/float_window_text_ave_head"
+                android:layout_alignBottom="@id/float_window_text_ave_head"
                 android:textColor="@android:color/white"/>
 
         </RelativeLayout>
@@ -87,26 +87,26 @@
     </RelativeLayout>
 
     <TextView
-        android:id="@+id/text_now"
+        android:id="@+id/float_window_text_now"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:text="0.00"
-        android:layout_below="@id/data_list"
+        android:layout_below="@id/float_window_data_bar"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_size_mid" />
 
     <lantian.airflowsense.DataPlotView
-        android:id="@+id/data_plot"
+        android:id="@+id/float_window_data_plot"
         android:layout_width="match_parent"
         android:layout_height="160dp"
-        android:layout_below="@+id/text_now"/>
+        android:layout_below="@+id/float_window_text_now"/>
 
     <ImageView
-        android:id="@+id/control_btn"
+        android:id="@+id/float_window_control_btn"
         android:layout_width="60dp"
         android:layout_height="match_parent"
-        android:layout_below="@id/data_plot"
+        android:layout_below="@id/float_window_data_plot"
         android:layout_centerHorizontal="true"
         android:src="@android:drawable/ic_media_play"/>
 

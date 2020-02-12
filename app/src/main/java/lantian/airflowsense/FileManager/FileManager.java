@@ -1,6 +1,11 @@
 package lantian.airflowsense.FileManager;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,7 +20,18 @@ public class FileManager {
 
     private static ArrayList<Double> tempDataArray;
     private static final String fileType = "CSV";
-    private static final String fileWrapper = "%s/%s.%s";
+    private static final String fileWrapper = "%s" + File.separator + "%s.%s";
+    private static String rootDir;
+
+    public static void init(Activity activity){
+        File root = activity.getExternalFilesDir(null);
+        if (root != null){
+            rootDir = root.getPath();
+        }
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(activity, Common.PERMISSIONS_STORAGE, Common.RequestCode.REQUEST_READ_WRITE_PERMISSION_CODE);
+        }
+    }
 
     public static synchronized void addTempData(double new_value){
         if (tempDataArray == null)
@@ -30,21 +46,29 @@ public class FileManager {
         tempDataArray = new ArrayList<>();
     }
 
-    public static boolean saveData(String user_name, String file_name){
+    public static String saveData(String user_name, String file_name){
         if (tempDataArray == null)
-            return false;
+            return null;
 
-        getDirectory(user_name); // Make sure the directory exists
+        /* Make sure the directory exists */
+        if (!createDirectory(user_name))
+            return null;
+
+        String postfix = generatePostfix();
+        String full_file_name = file_name + postfix;
 
         try {
-            File file = new File(getFilePath(user_name, file_name));
+            String count = "";
+            File file = new File(getFilePath(user_name, full_file_name));
             for (int i = 1; i < Integer.MAX_VALUE && file.exists(); i++){
-                file = new File(getFilePath(user_name, file_name + "(" + i + ")"));
+                count = "(" + i + ")";
+                file = new File(getFilePath(user_name, full_file_name + count));
             }
+            postfix = postfix + count;
 
             if (!file.createNewFile()){
                 Log.w("saveData", "fail");
-                return false;
+                return null;
             }
 
             FileOutputStream outputStream = new FileOutputStream(file);
@@ -53,20 +77,23 @@ public class FileManager {
 
         }catch (Exception e){
             Log.w("saveData", "fail");
-            return false;
+            return null;
         }
         tempDataArray = null;
-        return true;
+        return postfix;
     }
 
     public static void dumpData(){
         tempDataArray = null;
     }
 
-    public static File getFile(String user_name, String file_name){
+    public static File getFile(String user_name, String file_name, String postfix){
+        if (user_name == null || file_name == null || postfix == null)
+            return null;
 
+        String full_file_name = file_name + postfix;
         try {
-            File file = new File(getFilePath(user_name, file_name));
+            File file = new File(getFilePath(user_name, full_file_name));
             if (!file.exists())
                 return null;
             return file;
@@ -76,9 +103,13 @@ public class FileManager {
         }
     }
 
-    public static boolean removeFile(String user_name, String file_name){
+    public static boolean removeFile(String user_name, String file_name, String postfix){
+        if (user_name == null || file_name == null || postfix == null)
+            return false;
+
+        String full_file_name = file_name + postfix;
         try {
-            File file = new File(getFilePath(user_name, file_name));
+            File file = new File(getFilePath(user_name, full_file_name));
             if (!file.exists())
                 return false;
 
@@ -90,12 +121,16 @@ public class FileManager {
         }
     }
 
-    public static boolean renameFile(String user_name, String file_name, String new_name){
-        if (file_name == null || new_name == null || user_name == null) return false;
-        if (file_name.equals(new_name)) return true;
+    public static boolean renameFile(String user_name, String file_name, String postfix, String new_name){
+        if (file_name == null || new_name == null || postfix == null || user_name == null)
+            return false;
+
+        if (file_name.equals(new_name))
+            return true;
+
         try {
-            File old_file = new File(getFilePath(user_name, file_name));
-            File new_file = new File(getFilePath(user_name, new_name));
+            File old_file = new File(getFilePath(user_name, file_name + postfix));
+            File new_file = new File(getFilePath(user_name, new_name + postfix));
             if (!old_file.exists() || new_file.exists()) return false;
             return old_file.renameTo(new_file);
         }catch (Exception e){
@@ -104,29 +139,29 @@ public class FileManager {
         }
     }
 
-    public static String getDefaultFileName(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss:SS", Locale.CHINA);
+    private static String generatePostfix(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.CHINA);
         Date date = new Date(System.currentTimeMillis());
-        return sdf.format(date);
+        return "_" + sdf.format(date);
     }
 
-    public static File getDirectory(String user_name){
+    private static boolean createDirectory(String user_name){
+        if (user_name == null) return false;
+
         try {
             File directory = new File(getDirectoryPath(user_name));
             if (!directory.exists()){
-                if (!directory.mkdir()) {
-                    return null;
-                }
+                return directory.mkdir();
             }
-            return directory;
+            return true;
         }catch (Exception ex){
             Log.w("getDirectory", "fail to create directory");
-            return null;
+            return false;
         }
     }
 
     private static String getDirectoryPath(String user_name){
-        return (user_name.isEmpty()) ? Common.Norms.DEFAULT_USER_NAME : user_name;
+        return rootDir + File.separator + ((user_name.isEmpty()) ? Common.Norms.DEFAULT_USER_NAME : user_name);
     }
 
     private static String getFilePath(String user_name, String file_name){

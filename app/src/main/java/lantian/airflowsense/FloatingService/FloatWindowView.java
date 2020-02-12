@@ -45,7 +45,7 @@ class FloatWindowView extends RelativeLayout{
         LayoutInflater.from(context).inflate(R.layout.float_window, this);
         final View window = findViewById(R.id.float_window);
 
-        dataPlotView = findViewById(R.id.data_plot);
+        dataPlotView = findViewById(R.id.float_window_data_plot);
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(dm);
         int screenWidth = dm.widthPixels;
@@ -69,7 +69,7 @@ class FloatWindowView extends RelativeLayout{
         params.x = (screenWidth - viewWidth) / 2;
         params.y = (screenHeight - viewHeight) / 2;
 
-        findViewById(R.id.control_btn).setOnClickListener(new View.OnClickListener(){
+        findViewById(R.id.float_window_control_btn).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 handler.post(new Runnable() {
@@ -129,22 +129,22 @@ class FloatWindowView extends RelativeLayout{
         post(new Runnable() {
             @Override
             public void run() {
-                ((TextView)findViewById(R.id.text_max)).setText(String.format(
+                ((TextView)findViewById(R.id.float_window_text_max)).setText(String.format(
                         Locale.SIMPLIFIED_CHINESE,
                         "%.2f",
                         dataPlotView.getRecentDataMax(0)));
 
-                ((TextView)findViewById(R.id.text_min)).setText(String.format(
+                ((TextView)findViewById(R.id.float_window_text_min)).setText(String.format(
                         Locale.SIMPLIFIED_CHINESE,
                         "%.2f",
                         dataPlotView.getRecentDataMin(0)));
 
-                ((TextView)findViewById(R.id.text_ave)).setText(String.format(
+                ((TextView)findViewById(R.id.float_window_text_ave)).setText(String.format(
                         Locale.SIMPLIFIED_CHINESE,
                         "%.2f",
                         dataPlotView.getRecentDataAverage(0)));
 
-                ((TextView)findViewById(R.id.text_now)).setText(String.format(
+                ((TextView)findViewById(R.id.float_window_text_now)).setText(String.format(
                         Locale.SIMPLIFIED_CHINESE,
                         "%.2f",
                         now_text));
