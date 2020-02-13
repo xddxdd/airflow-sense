@@ -13,7 +13,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="@dimen/text_margin"
-        android:text="2020-02-10-23:17:50:145"
+        android:text=""
         android:textSize="@dimen/text_size_mid"
         android:textColor="@android:color/black"/>
 
@@ -21,7 +21,7 @@
         android:id="@+id/slide_block_file_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="2020年02月10日"
+        android:text=""
         android:layout_below="@+id/slide_block_file_name"
         android:layout_alignLeft="@id/slide_block_file_name"/>
 

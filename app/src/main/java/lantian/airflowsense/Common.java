@@ -8,6 +8,7 @@ public class Common {
 
     public class Norms {
         public static final String DEFAULT_USER_NAME = "default";
+        public static final String DateFormat = "yyyy年MM月dd日 HH:mm";
     }
 
     public class Action {

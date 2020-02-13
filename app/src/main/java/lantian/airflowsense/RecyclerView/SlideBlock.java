@@ -1,4 +1,4 @@
-package lantian.airflowsense.ListView;
+package lantian.airflowsense.RecyclerView;
 
 public class SlideBlock {
     private String date_text;

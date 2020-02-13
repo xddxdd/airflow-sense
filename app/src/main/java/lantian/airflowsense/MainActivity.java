@@ -8,11 +8,11 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.LongSparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,17 +20,21 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.NestedScrollView;
 
 import android.net.Uri;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.Calendar;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
 
 import lantian.airflowsense.FileManager.FileManager;
-import lantian.airflowsense.ListView.ListViewManager;
-import lantian.airflowsense.ListView.SlideBlock;
+import lantian.airflowsense.RecyclerView.RecyclerViewManager;
+import lantian.airflowsense.RecyclerView.SlideBlock;
 import lantian.airflowsense.authorization.LoginPage;
 import lantian.airflowsense.receiver.SampleDataReceiveService;
 import lantian.airflowsense.weather.WeatherCallback;
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private BLEUpdateReceiver bleUpdateReceiver = new BLEUpdateReceiver(); // The BroadcastReceiver that listens to the new data income and the change of connection status
     private FloatWindowReceiver floatWindowReceiver = new FloatWindowReceiver();
     private WeatherHelper weatherHelper = new WeatherHelper(); // A manager that get weather information from HeWeather App
+    private RecyclerViewManager recyclerViewManager;
 
     private static String UserName = "";   // If the UserName is empty, it means no real user is accessing.
                                     // Empty UserName is a default user, which can access all functionality as a real user
@@ -79,12 +84,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         /* Initialize the ListView manager */
-        NestedScrollView scrollView = findViewById(R.id.scrollView);
-        scrollView.smoothScrollTo(0, 0);
-        ListViewManager.ListViewInit(this);
-
-        /* Update the weather information */
-        refreshWeather();
+        recyclerViewManager = new RecyclerViewManager(this);
     }
 
     @Override
@@ -128,7 +128,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.menu_delete:
                 /* Delete the data with checkbox checked */
-                ListViewManager.removeSelectedSlideView();
+                ArrayList<SlideBlock> checkedList = recyclerViewManager.getCheckedList();
+                for (int i = 0; i < checkedList.size(); i++){
+                    SlideBlock block = checkedList.get(i);
+                    if (FileManager.removeFile(MainActivity.getUserName(), block.getFileName(), block.getPostfix())){
+                        recyclerViewManager.removeSlideBlock(checkedList.remove(i--));
+                    }
+                }
+                recyclerViewManager.updateView();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -153,6 +160,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
+        /* Update the weather information */
+        refreshWeather();
     }
 
     @Override
@@ -180,7 +189,9 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK){
                 /* If login successfully, update the UserName */
                 UserName = data.getStringExtra(Common.PacketParams.USER_NAME);
+                retrieveFiles();
             }
+            refreshWeather();
         }
     }
 
@@ -341,14 +352,37 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(floatWindowReceiver); // Unregister the BroadcastReceiver
     }
 
-    private String getCurrentDate(){
-        Calendar calendar = Calendar.getInstance();
-        return calendar.get(Calendar.YEAR) + "年" + (calendar.get(Calendar.MONTH) + 1) + "月" + calendar.get(Calendar.DAY_OF_MONTH) + "日 ";
-    }
+    private void retrieveFiles(){
+        recyclerViewManager.clearView();
+        File directory = FileManager.getDirectory(UserName);
+        if (directory == null)
+            return;
+        String[] fileList = directory.list();
+        if (fileList == null || fileList.length == 0)
+            return;
 
-    private String getCurrentTime(){
-        Calendar calendar = Calendar.getInstance();
-        return calendar.get(Calendar.HOUR) + ":" + calendar.get(Calendar.MINUTE);
+        long[] dateArray = new long[fileList.length];
+        LongSparseArray<String> date_file_map = new LongSparseArray<>();
+        for (int i = 0; i < fileList.length; i++) {
+            String s = fileList[i];
+            int split_point = s.lastIndexOf('_');
+            long postfix_num = Long.parseLong(s.substring(split_point + 1, s.length() - FileManager.fileType.length()));
+            dateArray[i] = postfix_num;
+            date_file_map.append(postfix_num, s);
+        }
+        Arrays.sort(dateArray);
+        for (long i : dateArray) {
+            String file_full_name = date_file_map.get(i);
+            int split_point = file_full_name.lastIndexOf('_');
+            Date date = new Date(i);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Common.Norms.DateFormat, Locale.CHINA);
+            recyclerViewManager.addSlideView(new SlideBlock(
+                    simpleDateFormat.format(date), // Date text
+                    file_full_name.substring(0, split_point), // File name
+                    file_full_name.substring(split_point, file_full_name.length() - FileManager.fileType.length()) // Postfix
+            ));
+        }
+        recyclerViewManager.updateView();
     }
 
     /*------------------------------------------------------- Data Receiver Class -------------------------------------------------------*/
@@ -415,9 +449,10 @@ public class MainActivity extends AppCompatActivity {
                     /* Create a EditText view for a AlertDialog to get file name */
                     final EditText fileName = new EditText(MainActivity.this);
                     /* Set a default filename */
-                    final String date = getCurrentDate();
-                    final String time = getCurrentTime();
-                    fileName.setText(String.format("%s %s", date, time));
+                    Date date = new Date(System.currentTimeMillis());
+                    final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Common.Norms.DateFormat, Locale.CHINA);
+                    String date_text = simpleDateFormat.format(date);
+                    fileName.setText(date_text);
 
                     /* Launch a AlertDialog ask whether to save the data */
                     new AlertDialog.Builder(MainActivity.this)
@@ -431,7 +466,9 @@ public class MainActivity extends AppCompatActivity {
                                     String file_name = fileName.getText().toString();
                                     String postfix = FileManager.saveData(UserName, file_name);
                                     if (postfix != null) {
-                                        ListViewManager.addSlideView(new SlideBlock(date, file_name, postfix));
+                                        Date file_date = new Date(Long.parseLong(postfix.substring(1)));
+                                        recyclerViewManager.addSlideView(new SlideBlock(simpleDateFormat.format(file_date), file_name, postfix));
+                                        recyclerViewManager.updateView();
                                     }else {
                                         Toast.makeText(MainActivity.this, "数据储存失败", Toast.LENGTH_SHORT).show();
                                     }

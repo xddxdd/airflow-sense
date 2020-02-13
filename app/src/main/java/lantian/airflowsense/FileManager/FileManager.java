@@ -9,18 +9,16 @@ import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 
 import lantian.airflowsense.Common;
 
 public class FileManager {
 
     private static ArrayList<Double> tempDataArray;
-    private static final String fileType = "CSV";
-    private static final String fileWrapper = "%s" + File.separator + "%s.%s";
+    public static final String fileType = ".CSV";
+    private static final String fileWrapper = "%s" + File.separator + "%s%s";
     private static String rootDir;
 
     public static void init(Activity activity){
@@ -51,20 +49,17 @@ public class FileManager {
             return null;
 
         /* Make sure the directory exists */
-        if (!createDirectory(user_name))
+        if (getDirectory(user_name) == null)
             return null;
 
-        String postfix = generatePostfix();
-        String full_file_name = file_name + postfix;
+        String postfix = generatePostfix(0);
 
         try {
-            String count = "";
-            File file = new File(getFilePath(user_name, full_file_name));
+            File file = new File(getFilePath(user_name, file_name + postfix));
             for (int i = 1; i < Integer.MAX_VALUE && file.exists(); i++){
-                count = "(" + i + ")";
-                file = new File(getFilePath(user_name, full_file_name + count));
+                postfix = generatePostfix(i);
+                file = new File(getFilePath(user_name, file_name + postfix));
             }
-            postfix = postfix + count;
 
             if (!file.createNewFile()){
                 Log.w("saveData", "fail");
@@ -139,24 +134,26 @@ public class FileManager {
         }
     }
 
-    private static String generatePostfix(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.CHINA);
+    private static String generatePostfix(int offset){
         Date date = new Date(System.currentTimeMillis());
-        return "_" + sdf.format(date);
+        long time = date.getTime() + offset;
+        return "_" + time;
     }
 
-    private static boolean createDirectory(String user_name){
-        if (user_name == null) return false;
+    public static File getDirectory(String user_name){
+        if (user_name == null) return null;
 
         try {
             File directory = new File(getDirectoryPath(user_name));
             if (!directory.exists()){
-                return directory.mkdir();
+                if (!directory.mkdir()){
+                    return null;
+                }
             }
-            return true;
+            return directory;
         }catch (Exception ex){
             Log.w("getDirectory", "fail to create directory");
-            return false;
+            return null;
         }
     }
 
