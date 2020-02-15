@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         /* Initialize the ListView manager */
         recyclerViewManager = new RecyclerViewManager(this);
+        retrieveFiles();
     }
 
     @Override
@@ -428,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         inputStream.close();
                         JSONObject object = new JSONObject();
-                        object.put(Common.PacketParams.AIRFLOW_DATA, buffer.toByteArray());
+                        object.put(Common.PacketParams.AIRFLOW_DATA, buffer.toString("UTF-8"));
                         packets.put(object);
                     }
                     send_msg.put(Common.PacketParams.PACKETS, packets);
@@ -440,21 +441,25 @@ public class MainActivity extends AppCompatActivity {
                         socket.shutdownOutput();
 
                         InputStream is = socket.getInputStream();
-                        final byte[] reply_byte = new byte[1024];
-                        if (is.read(reply_byte) != 1024){
-                            JSONObject reply_msg = new JSONObject(new String(reply_byte));
-                            final int result = reply_msg.getInt(Common.PacketParams.INSTRUCTION);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (result == Common.Instruction.APPROVED){
-                                        Toast.makeText(MainActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
-                                    }else {
-                                        Toast.makeText(MainActivity.this, "上传失败", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        byte[] reply_byte = new byte[128];
+                        int len;
+                        while ((len = is.read(reply_byte)) != -1){
+                            buffer.write(reply_byte, 0, len);
                         }
+
+                        JSONObject reply_msg = new JSONObject(buffer.toString());
+                        final int result = reply_msg.getInt(Common.PacketParams.INSTRUCTION);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (result == Common.Instruction.APPROVED){
+                                    Toast.makeText(MainActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                                }else {
+                                    Toast.makeText(MainActivity.this, "上传失败", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
                     }catch (Exception e){
                         e.printStackTrace();
                     }
