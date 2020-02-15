@@ -8,10 +8,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -22,9 +21,6 @@ import lantian.airflowsense.R;
 public class RegisterPage extends AppCompatActivity {
 
     EditText name;
-    EditText password;
-    EditText re_password;
-    JSONObject send_msg = new JSONObject();
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -33,35 +29,17 @@ public class RegisterPage extends AppCompatActivity {
         setContentView(R.layout.register_page); // Bind the login_page.xml layout
 
         name = findViewById(R.id.register_page_user_name);
-        password = findViewById(R.id.register_page_password);
-        re_password = findViewById(R.id.register_page_re_password);
 
         (findViewById(R.id.register_page_register_button)).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                String name_txt = name.getText().toString();
-                String password_txt = password.getText().toString();
+                final String name_txt = name.getText().toString();
                 if (name_txt.isEmpty()){
                     Toast.makeText(RegisterPage.this, "姓名不能为空",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (password_txt.isEmpty()) {
-                    Toast.makeText(RegisterPage.this, "密码不能为空", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (!password_txt.equals(re_password.getText().toString())) {
-                    Toast.makeText(RegisterPage.this, "两次密码不同", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                try {
-                    send_msg.put("name", name_txt);
-                    send_msg.put("password", password_txt);
-                    send_msg.put("operation", Common.Operation.REGISTER);
-                    send_msg.put("instruction", 0);
-                    send_msg.put("error", 0);
-                }catch (JSONException e){
-                    Toast.makeText(RegisterPage.this, "JSON exception" + e.getMessage(), Toast.LENGTH_LONG).show();
+                if (Common.Norms.DEFAULT_USER_NAME.equals(name_txt)){
+                    Toast.makeText(RegisterPage.this, "用户名不可用", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -69,54 +47,50 @@ public class RegisterPage extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Socket socket = new Socket("47.97.98.49",2862);
-
+                            Socket socket = new Socket(Common.Norms.SERVER_IP,Common.Norms.SERVER_PORT);
+                            JSONObject send_msg = new JSONObject();
+                            send_msg.put(Common.PacketParams.USER_NAME, name_txt);
+                            send_msg.put(Common.PacketParams.OPERATION, Common.Operation.REGISTER);
                             try {
                                 OutputStream os = socket.getOutputStream();
-                                byte[] send_byte = send_msg.toString().getBytes();
-                                int msg_length = send_byte.length;
-                                os.write(send_byte);
+                                os.write(send_msg.toString().getBytes());
                                 socket.shutdownOutput();
 
                                 InputStream is = socket.getInputStream();
-                                byte[] reply_byte = new byte[msg_length + 128];
-                                if (is.read(reply_byte) != -1) {
-                                    throw new Exception("Unexpectedly large server callback data");
+                                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                                byte[] reply_byte = new byte[128];
+                                int len;
+                                while ((len = is.read(reply_byte)) != -1){
+                                    buffer.write(reply_byte, 0, len);
                                 }
-                                socket.shutdownInput();
 
-                                try {
-                                    JSONObject reply_msg = new JSONObject(is.toString());
-                                    int instruction = reply_msg.getInt("instruction");
-                                    if (instruction == Common.Instruction.APPROVED){
-                                        Intent intent = new Intent();
-                                        intent.putExtra(Common.PacketParams.USER_NAME, reply_msg.getString(Common.PacketParams.USER_NAME));
-                                        setResult(RESULT_OK, intent);
-                                        finish();
-                                    }else {
-                                        final int errorCode = reply_msg.getInt("error");
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                if (errorCode == Common.ErrorCode.NAME_OCCUPIED){
-                                                    Toast.makeText(RegisterPage.this, "用户名已被占用", Toast.LENGTH_SHORT).show();
-                                                }else {
-                                                    Toast.makeText(RegisterPage.this, "服务器端错误", Toast.LENGTH_SHORT).show();
-                                                }
+                                JSONObject reply_msg = new JSONObject(buffer.toString());
+                                if (Common.Instruction.APPROVED == reply_msg.getInt(Common.PacketParams.INSTRUCTION)){
+                                    Intent intent = new Intent();
+                                    intent.putExtra(Common.PacketParams.USER_NAME, name_txt);
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                }else {
+                                    final int errorCode = reply_msg.getInt(Common.PacketParams.ERRORCODE);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (errorCode == Common.ErrorCode.NAME_OCCUPIED){
+                                                Toast.makeText(RegisterPage.this, "用户名已被占用", Toast.LENGTH_SHORT).show();
+                                            }else {
+                                                Toast.makeText(RegisterPage.this, "服务器端错误", Toast.LENGTH_SHORT).show();
                                             }
-                                        });
-                                    }
-                                }catch (JSONException e){
-                                    Toast.makeText(RegisterPage.this, "JSON exception" + e.getMessage(), Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                                 }
 
                             }catch (Exception e){
-                                Toast.makeText(RegisterPage.this, "Socket exception" + e.getMessage(), Toast.LENGTH_LONG).show();
+                                e.printStackTrace();
                             }
 
                             socket.close();
-                        }catch (IOException e){
-                            Toast.makeText(RegisterPage.this, "Socket exception" + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
                     }
                 }).start();

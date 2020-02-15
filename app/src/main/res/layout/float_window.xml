@@ -108,6 +108,6 @@
         android:layout_height="match_parent"
         android:layout_below="@id/float_window_data_plot"
         android:layout_centerHorizontal="true"
-        android:src="@android:drawable/ic_media_play"/>
+        android:src="@android:drawable/ic_media_pause"/>
 
 </RelativeLayout>

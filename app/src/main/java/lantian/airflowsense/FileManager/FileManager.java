@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -67,7 +68,7 @@ public class FileManager {
             }
 
             FileOutputStream outputStream = new FileOutputStream(file);
-            outputStream.write(tempDataArray.toString().getBytes());
+            outputStream.write(tempDataArray.toString().getBytes(StandardCharsets.UTF_8));
             outputStream.close();
 
         }catch (Exception e){

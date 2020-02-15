@@ -2,13 +2,13 @@ package lantian.airflowsense;
 
 import android.Manifest;
 
-import lantian.airflowsense.BuildConfig;
-
 public class Common {
 
     public class Norms {
-        public static final String DEFAULT_USER_NAME = "default";
+        public static final String DEFAULT_USER_NAME = "_default";
         public static final String DateFormat = "yyyy年MM月dd日 HH:mm";
+        public static final int SERVER_PORT = 7777;
+        public static final String SERVER_IP = "192.168.1.104";
     }
 
     public class Action {
@@ -19,10 +19,12 @@ public class Common {
 
     public class PacketParams {
         public static final String USER_NAME = "user_name";
-        public static final String PASSWORD = "password";
-        public static final String ERRORCODE = "error";
-        public static final String INSTRUCTION = "instruction";
         public static final String OPERATION = "operation";
+        public static final String PACKET_NUM = "packet_num";
+        public static final String PACKETS = "packets";
+        public static final String AIRFLOW_DATA = "airflow_data";
+        public static final String INSTRUCTION = "instruction";
+        public static final String ERRORCODE = "error";
 
         public static final String CONNECTIVITY = "connectivity";
         public static final String NEW_VALUE = "new_value";
@@ -32,7 +34,7 @@ public class Common {
     public class ErrorCode {
         public static final int NON_EXIST_USER = 0;
         public static final int NAME_OCCUPIED = 1;
-        public static final int WRONG_PASSWORD = 2;
+        public static final int SERVER_ERROR = 2;
     }
 
     public class Instruction {
@@ -43,6 +45,7 @@ public class Common {
     public class Operation {
         public static final int LOGIN = 0;
         public static final int REGISTER = 1;
+        public static final int UPLOAD = 2;
     }
 
     public class RequestCode {

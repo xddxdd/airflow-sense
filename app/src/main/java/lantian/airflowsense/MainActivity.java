@@ -25,7 +25,16 @@ import android.net.Uri;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.menu_upload:
                 /* Upload the data with checkbox checked */
-                refreshWeather();
+                uploadFiles();
                 break;
             case R.id.menu_delete:
                 /* Delete the data with checkbox checked */
@@ -383,6 +392,81 @@ public class MainActivity extends AppCompatActivity {
             ));
         }
         recyclerViewManager.updateView();
+    }
+
+    private void uploadFiles(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<SlideBlock> blocks = recyclerViewManager.getCheckedList();
+                try {
+                    JSONObject send_msg = new JSONObject();
+                    String user_name = UserName.isEmpty() ? Common.Norms.DEFAULT_USER_NAME : UserName;
+                    send_msg.put(Common.PacketParams.USER_NAME, user_name);
+                    send_msg.put(Common.PacketParams.OPERATION, Common.Operation.UPLOAD);
+                    send_msg.put(Common.PacketParams.PACKET_NUM, blocks.size());
+
+                    JSONArray packets = new JSONArray();
+                    for (int i = 0; i < blocks.size(); i++){
+                        SlideBlock block = blocks.get(i);
+                        File file = FileManager.getFile(UserName, block.getFileName(), block.getPostfix());
+                        if (file == null){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "文件加载失败", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            return;
+                        }
+                        FileInputStream inputStream = new FileInputStream(file);
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        byte[] input_byte = new byte[1024];
+                        int len;
+                        while ((len = inputStream.read(input_byte)) != -1){
+                            buffer.write(input_byte, 0, len);
+                        }
+                        inputStream.close();
+                        JSONObject object = new JSONObject();
+                        object.put(Common.PacketParams.AIRFLOW_DATA, buffer.toByteArray());
+                        packets.put(object);
+                    }
+                    send_msg.put(Common.PacketParams.PACKETS, packets);
+
+                    Socket socket = new Socket(Common.Norms.SERVER_IP, Common.Norms.SERVER_PORT);
+                    try {
+                        OutputStream os = socket.getOutputStream();
+                        os.write(send_msg.toString().getBytes(StandardCharsets.UTF_8));
+                        socket.shutdownOutput();
+
+                        InputStream is = socket.getInputStream();
+                        final byte[] reply_byte = new byte[1024];
+                        if (is.read(reply_byte) != 1024){
+                            JSONObject reply_msg = new JSONObject(new String(reply_byte));
+                            final int result = reply_msg.getInt(Common.PacketParams.INSTRUCTION);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (result == Common.Instruction.APPROVED){
+                                        Toast.makeText(MainActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        Toast.makeText(MainActivity.this, "上传失败", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    socket.close();
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
     }
 
     /*------------------------------------------------------- Data Receiver Class -------------------------------------------------------*/

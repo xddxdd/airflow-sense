@@ -9,12 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <EditText
-        android:id="@+id/login_page_password"
-        android:hint="@string/PASSWORD_HINT"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
     <Button
         android:id="@+id/login_page_login_button"
         android:layout_width="match_parent"
